@@ -28,7 +28,7 @@ export async function POST({ request }) {
     }
     
     // Call the FastAPI backend research endpoint
-    const apiUrl = process.env.API_URL || 'http://localhost:8085';
+    const apiUrl = process.env.VITE_API_URL || 'http://localhost:8085';
     
     const response = await longTimeoutFetch(
       `${apiUrl}/research`,

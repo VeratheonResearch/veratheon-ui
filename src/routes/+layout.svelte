@@ -145,6 +145,9 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+	<link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&display=swap" rel="stylesheet" />
 </svelte:head>
 
 {#if authLoading}
@@ -159,7 +162,7 @@
 					<div class="flex justify-between items-center h-16">
 						<!-- Left: Title/Brand -->
 						<div>
-							<a class="text-xl font-bold" href="/">Market Research Agent</a>
+							<a class="text-xl font-bold" href="/" style="font-family: 'Major Mono Display', monospace;">Veratheon</a>
 						</div>
 
 						<!-- Middle: Navigation (desktop only) -->

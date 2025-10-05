@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { API_URL } from '$lib/config';
 
 export async function GET({ params }) {
   try {
@@ -7,14 +8,9 @@ export async function GET({ params }) {
     if (!symbol || typeof symbol !== 'string') {
       return json({ error: 'Invalid symbol' }, { status: 400 });
     }
-    
-    // In Docker Compose, the FastAPI service is named 'api' and runs on port 8085
-    // When running locally, use localhost
-    const apiUrl = process.env.API_URL || 
-                  (process.env.NODE_ENV === 'production' ? 'http://api:8085' : 'http://localhost:8085');
-    
+
     // Call FastAPI backend to check report status
-    const response = await fetch(`${apiUrl}/report-status/${symbol.trim().toUpperCase()}`, {
+    const response = await fetch(`${API_URL}/report-status/${symbol.trim().toUpperCase()}`, {
       method: 'GET'
     });
     

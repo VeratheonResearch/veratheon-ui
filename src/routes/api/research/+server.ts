@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { API_URL } from '$lib/config';
 
 // Long timeout wrapper for research operations
 async function longTimeoutFetch(url: string, options: RequestInit) {
@@ -28,10 +29,8 @@ export async function POST({ request }) {
     }
     
     // Call the FastAPI backend research endpoint
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8085';
-    
     const response = await longTimeoutFetch(
-      `${apiUrl}/research`,
+      `${API_URL}/research`,
       {
         method: 'POST',
         headers: {

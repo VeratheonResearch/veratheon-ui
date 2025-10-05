@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-
-const API_URL = process.env.API_URL || 'http://localhost:8085';
+import { API_URL } from '$lib/config';
 
 export const GET: RequestHandler = async ({ url }) => {
   const query = url.searchParams.get('query');

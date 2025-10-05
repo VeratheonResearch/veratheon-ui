@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { API_URL } from '$lib/config';
 
 export async function GET({ params, url }) {
   try {
@@ -7,24 +8,20 @@ export async function GET({ params, url }) {
     if (!symbol || typeof symbol !== 'string') {
       return json({ error: 'Invalid symbol' }, { status: 400 });
     }
-    
-    // In Docker Compose, the FastAPI service is named 'api' and runs on port 8085
-    // When running locally, use localhost
-    const apiUrl = process.env.API_URL || 
-                  (process.env.NODE_ENV === 'production' ? 'http://api:8085' : 'http://localhost:8085');
+
     const job_id = url.searchParams.get('job_id');
-    
+
     try {
       let response;
-      
+
       if (job_id) {
         // Check specific job status by job ID
-        response = await fetch(`${apiUrl}/jobs/${job_id}`, {
+        response = await fetch(`${API_URL}/jobs/${job_id}`, {
           method: 'GET'
         });
       } else {
         // Check most recent job for symbol
-        response = await fetch(`${apiUrl}/jobs/symbol/${symbol.trim().toUpperCase()}`, {
+        response = await fetch(`${API_URL}/jobs/symbol/${symbol.trim().toUpperCase()}`, {
           method: 'GET'
         });
       }

@@ -7,7 +7,7 @@
 	import { supabase } from '$lib/supabase';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
 	import type { User } from '$lib/types/auth';
-	import { Home, TrendingUp } from '@lucide/svelte';
+	import { Home, TrendingUp, Clock } from '@lucide/svelte';
 
 	let { children } = $props();
 
@@ -185,6 +185,15 @@
 									Trades
 								</a>
 							</li>
+							<li>
+								<a
+									href="/history"
+									class="btn btn-ghost gap-2 {$page.url.pathname === '/history' ? 'btn-active' : ''}"
+								>
+									<Clock class="w-4 h-4" />
+									History
+								</a>
+							</li>
 						</ul>
 
 						<!-- Right: Theme Toggle + GitHub + User Avatar + Mobile Menu -->
@@ -293,6 +302,16 @@
 											<TrendingUp class="w-4 h-4" />
 											<span>Trades</span>
 											{#if $page.url.pathname === '/trades'}
+												<div class="ml-auto w-1 h-4 bg-primary rounded-full"></div>
+											{/if}
+										</a>
+										<a
+											href="/history"
+											class="flex items-center gap-3 px-4 py-2 hover:bg-base-200 {$page.url.pathname === '/history' ? 'bg-base-200 font-semibold' : ''}"
+										>
+											<Clock class="w-4 h-4" />
+											<span>History</span>
+											{#if $page.url.pathname === '/history'}
 												<div class="ml-auto w-1 h-4 bg-primary rounded-full"></div>
 											{/if}
 										</a>

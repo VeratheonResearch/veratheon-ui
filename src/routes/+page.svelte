@@ -8,6 +8,7 @@
   import TickerSearch from '$lib/components/TickerSearch.svelte';
   import { supabase } from '$lib/supabase';
   import type { RealtimeChannel } from '@supabase/supabase-js';
+  import { page } from '$app/stores';
 
   // Configuration
   const MAX_STEPS = 29;
@@ -134,6 +135,49 @@
     return await response.json();
   }
 
+  // Save job to user history
+  async function saveJobToHistory(mainJobId: string, symbol: string) {
+    try {
+      console.log('🔍 saveJobToHistory called with:', { mainJobId, symbol });
+
+      const { data: { session } } = await supabase!.auth.getSession();
+      console.log('🔍 Session check:', session ? 'Session found' : 'No session');
+
+      if (!session) {
+        console.warn('⚠️ No session found, skipping save to history');
+        return;
+      }
+
+      console.log('🔍 Making POST request to /api/user-jobs...');
+      const response = await fetch('/api/user-jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          main_job_id: mainJobId,
+          symbol: symbol,
+          metadata: {
+            force_recompute: forceRecompute
+          }
+        })
+      });
+
+      console.log('🔍 Response status:', response.status);
+      const responseData = await response.json();
+      console.log('🔍 Response data:', responseData);
+
+      if (!response.ok) {
+        console.error('❌ Failed to save job to history:', responseData);
+      } else {
+        console.log('✅ Job saved to user history successfully!');
+      }
+    } catch (error) {
+      console.error('❌ Error saving job to history:', error);
+    }
+  }
+
   async function runResearch() {
     if (!stockSymbol.trim()) {
       alert('Please enter a stock symbol');
@@ -154,6 +198,9 @@
       console.log('Research started:', startResult);
 
       currentJobId = startResult.job_id;
+
+      // Save to user history
+      await saveJobToHistory(currentJobId, stockSymbol.trim().toUpperCase());
 
       // Get initial status
       const initialStatus = await checkJobStatus(currentJobId);
@@ -325,6 +372,32 @@
       }
     }, 3000);
   }
+
+  // Load historical job if passed via navigation state
+  function loadHistoricalJob() {
+    const state = $page.state as any;
+    if (state?.loadJob) {
+      const { symbol, result, jobStatus: mainJob, subJobs: subs, steps } = state.loadJob;
+
+      // Populate the UI with historical data
+      stockSymbol = symbol;
+      researchResult = result;
+      jobStatus = {
+        ...mainJob,
+        steps: steps || []
+      };
+      subJobs = subs || [];
+      currentJobId = mainJob.main_job_id;
+      isRunningResearch = false;
+
+      console.log('Loaded historical job:', symbol);
+    }
+  }
+
+  onMount(() => {
+    // Check if we're loading a historical job
+    loadHistoricalJob();
+  });
 
   onDestroy(() => {
     if (realtimeChannel && supabase) {

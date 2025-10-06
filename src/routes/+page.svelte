@@ -1,14 +1,17 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
-  import { marked } from 'marked';
   import type { ResearchResult } from '$lib/research-types';
-  import { Search, ChartNoAxesCombined, CircleCheckBig, Lightbulb, TrendingUp, ListEnd } from '@lucide/svelte';
-  import ReportStatusIndicator from '$lib/components/ReportStatusIndicator.svelte';
-  import TickerSearch from '$lib/components/TickerSearch.svelte';
+  import ResearchInputCard from '$lib/components/ResearchInputCard.svelte';
+  import ResearchStatusHeader from '$lib/components/ResearchStatusHeader.svelte';
+  import ResearchFlowsSection from '$lib/components/ResearchFlowsSection.svelte';
+  import ResearchReportDisplay from '$lib/components/ResearchReportDisplay.svelte';
+  import ProcessDetailsModal from '$lib/components/ProcessDetailsModal.svelte';
   import { supabase } from '$lib/supabase';
   import type { RealtimeChannel } from '@supabase/supabase-js';
   import { page } from '$app/stores';
+  import { renderMarkdown } from '$lib/utils/markdown';
+  import { startResearch as apiStartResearch, checkJobStatus, saveJobToHistory } from '$lib/api/research';
 
   // Configuration
   const MAX_STEPS = 29;
@@ -59,11 +62,6 @@
   let showFlows = true;  // Control flow boxes visibility
   let selectedFlow: SubJob | null = null;  // Track selected flow for future report viewing
 
-  function renderMarkdown(text: string) {
-    return marked(text);
-  }
-
-
   $: if (showModal) {
     // Scroll to bottom of modal when opened
     setTimeout(() => {
@@ -90,92 +88,21 @@
     }
   }
 
-  // Start research and return job ID
-  async function startResearch() {
-    // Get preferred model from localStorage, default to o4_mini
-    let preferredModel = 'o4_mini';
+  // Get preferred model from localStorage
+  function getPreferredModel(): string {
     try {
       const savedModel = localStorage.getItem('preferredModel');
-      if (savedModel) {
-        preferredModel = savedModel;
-      }
+      return savedModel || 'o4_mini';
     } catch (e) {
       console.warn('Failed to read preferred model from localStorage:', e);
+      return 'o4_mini';
     }
-
-    const response = await fetch('/api/research/start', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        symbol: stockSymbol.trim().toUpperCase(),
-        force_recompute: forceRecompute,
-        model: preferredModel
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to start research: ${response.statusText}`);
-    }
-
-    return await response.json();
   }
 
-  // Check job status by job ID
-  async function checkJobStatus(jobId: string) {
-    const response = await fetch(`/api/research/status/${stockSymbol.trim().toUpperCase()}?job_id=${jobId}`, {
-      method: 'GET'
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to check status: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  }
-
-  // Save job to user history
-  async function saveJobToHistory(mainJobId: string, symbol: string) {
-    try {
-      console.log('🔍 saveJobToHistory called with:', { mainJobId, symbol });
-
-      const { data: { session } } = await supabase!.auth.getSession();
-      console.log('🔍 Session check:', session ? 'Session found' : 'No session');
-
-      if (!session) {
-        console.warn('⚠️ No session found, skipping save to history');
-        return;
-      }
-
-      console.log('🔍 Making POST request to /api/user-jobs...');
-      const response = await fetch('/api/user-jobs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          main_job_id: mainJobId,
-          symbol: symbol,
-          metadata: {
-            force_recompute: forceRecompute
-          }
-        })
-      });
-
-      console.log('🔍 Response status:', response.status);
-      const responseData = await response.json();
-      console.log('🔍 Response data:', responseData);
-
-      if (!response.ok) {
-        console.error('❌ Failed to save job to history:', responseData);
-      } else {
-        console.log('✅ Job saved to user history successfully!');
-      }
-    } catch (error) {
-      console.error('❌ Error saving job to history:', error);
-    }
+  // Get access token for API calls
+  async function getAccessToken(): Promise<string | null> {
+    const { data: { session } } = await supabase!.auth.getSession();
+    return session?.access_token || null;
   }
 
   async function runResearch() {
@@ -194,16 +121,17 @@
 
     try {
       // Start research and get job ID
-      const startResult = await startResearch();
+      const preferredModel = getPreferredModel();
+      const startResult = await apiStartResearch(stockSymbol, forceRecompute, preferredModel);
       console.log('Research started:', startResult);
 
       currentJobId = startResult.job_id;
 
       // Save to user history
-      await saveJobToHistory(currentJobId, stockSymbol.trim().toUpperCase());
+      await saveJobToHistory(currentJobId, stockSymbol.trim().toUpperCase(), forceRecompute, getAccessToken);
 
       // Get initial status
-      const initialStatus = await checkJobStatus(currentJobId);
+      const initialStatus = await checkJobStatus(currentJobId, stockSymbol);
       jobStatus = initialStatus;
 
       // Subscribe to real-time updates for this job
@@ -351,7 +279,7 @@
           return;
         }
 
-        const status = await checkJobStatus(currentJobId);
+        const status = await checkJobStatus(currentJobId, stockSymbol);
         console.log('Polling job status:', status);
 
         jobStatus = status;
@@ -409,67 +337,12 @@
 
 <div class="container mx-auto p-6">
   <div class="mb-8">
-    <div class="card bg-base-100 shadow-lg border border-base-200">
-      <div class="card-body p-6">
-        <h2 class="card-title text-xl font-bold text-primary mb-4">Consensus EPS Validation</h2>
-        
-        <div class="flex flex-wrap gap-6 items-end">
-          <!-- Stock Symbol Input with Ticker Search -->
-          <div class="form-control w-80">
-            <label for="stock-symbol" class="label pb-2">
-              <span class="label-text font-medium text-base-content">Stock Symbol or Company Name</span>
-            </label>
-            <div class="flex items-center gap-2">
-              <div class="w-full">
-                <TickerSearch 
-                  placeholder="Search for a stock..."
-                  on:select={(e) => {
-                    stockSymbol = e.detail.symbol;
-                  }}
-                />
-              </div>
-              {#if stockSymbol.trim()}
-                <ReportStatusIndicator symbol={stockSymbol} />
-              {/if}
-            </div>
-          </div>
-
-          <!-- Spacer -->
-          <div class="flex-1"></div>
-
-          <!-- Recompute and Button Group -->
-          <div class="flex items-center gap-3">
-            <!-- Recompute Checkbox -->
-            <div class="flex items-center gap-2">
-              <label for="force-recompute" class="text-sm text-base-content/70">Recompute</label>
-              <input
-                id="force-recompute"
-                type="checkbox"
-                class="checkbox checkbox-primary checkbox-lg"
-                bind:checked={forceRecompute}
-                disabled={isRunningResearch}
-              />
-            </div>
-            
-            <!-- Start Research Button -->
-            <button
-              class="btn btn-primary btn-lg shadow-md"
-              class:btn-disabled={isRunningResearch || !stockSymbol.trim()}
-              on:click={runResearch}
-              disabled={isRunningResearch || !stockSymbol.trim()}
-            >
-              {#if isRunningResearch}
-                <span class="loading loading-spinner loading-sm"></span>
-                Analyzing...
-              {:else}
-                <Search class="w-5 h-5" />
-                Start Research
-              {/if}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ResearchInputCard
+      bind:stockSymbol
+      bind:forceRecompute
+      {isRunningResearch}
+      onStartResearch={runResearch}
+    />
   </div>
   
 
@@ -479,279 +352,41 @@
       <!-- Unified Research Card -->
       <div class="card bg-base-100 shadow-2xl border border-primary/20">
         <div class="card-body p-8">
-          <!-- Header with Status -->
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-4">
-              <div class="text-primary text-3xl">
-                {#if isRunningResearch}
-                  <span class="loading loading-spinner loading-lg text-primary"></span>
-                {:else if researchResult}
-                  <ChartNoAxesCombined class="w-8 h-8" />
-                {:else}
-                  <CircleCheckBig class="w-8 h-8" />
-                {/if}
-              </div>
-              <div>
-                <h2 class="text-3xl font-bold text-primary">
-                  {#if isRunningResearch}
-                    Research in Progress
-                  {:else if researchResult}
-                    Research Results for {stockSymbol.toUpperCase()}
-                  {:else}
-                    Research Complete
-                  {/if}
-                </h2>
-                <div class="flex items-center gap-3 mt-1">
-                  <p class="text-base-content/70">
-                    {#if isRunningResearch}
-                      Analyzing {stockSymbol.toUpperCase()} • Job ID: {currentJobId || 'N/A'}
-                    {:else if researchResult}
-                      Comprehensive market analysis complete
-                    {:else}
-                      Analysis completed for {stockSymbol.toUpperCase()}
-                    {/if}
-                  </p>
-                  {#if researchResult}
-                    <div class="badge badge-primary badge-lg">Comprehensive Analysis</div>
-                  {/if}
-                </div>
-              </div>
-            </div>
-            
-            <!-- Process Toggle Button -->
-            {#if jobStatus?.steps && jobStatus.steps.length > 0}
-              <div class="flex gap-2">
-                <button 
-                  class="btn btn-outline btn-secondary"
-                  on:click={() => showModal = true}
-                >
-                  View Process ({jobStatus.steps.length} steps)
-                </button>
-              </div>
-            {/if}
-          </div>
+          <ResearchStatusHeader
+            {isRunningResearch}
+            {researchResult}
+            {stockSymbol}
+            {currentJobId}
+            {jobStatus}
+            onViewProcess={() => showModal = true}
+          />
 
-          <!-- Research Flows - Collapsible -->
-          {#if subJobs.length > 0}
-            <div class="mb-8 border border-base-300 rounded-lg overflow-hidden">
-              <!-- Header with toggle -->
-              <button 
-                class="w-full p-4 bg-base-200 hover:bg-base-300 transition-colors flex items-center justify-between"
-                on:click={() => showFlows = !showFlows}
-              >
-                <div class="flex items-center gap-3">
-                  <ChartNoAxesCombined class="w-5 h-5 text-primary" />
-                  <span class="font-semibold text-base-content">Research Flows</span>
-                  <span class="badge badge-primary">{subJobs.length} flows</span>
-                  {#if !isRunningResearch}
-                    <span class="badge badge-success">Completed</span>
-                  {/if}
-                </div>
-                <svg 
-                  class="w-5 h-5 transition-transform {showFlows ? 'rotate-180' : ''}"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+          <ResearchFlowsSection
+            {subJobs}
+            {isRunningResearch}
+            bind:showFlows
+            onFlowSelect={(subJob) => {
+              selectedFlow = subJob;
+              console.log('Selected flow:', subJob.job_name, subJob);
+            }}
+          />
 
-              <!-- Collapsible content -->
-              {#if showFlows}
-                <div class="p-4" transition:slide>
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {#each subJobs as subJob (subJob.sub_job_id)}
-                      <button
-                        class="p-3 rounded-lg border text-left transition-all hover:shadow-md {subJob.status === 'completed' ? 'bg-success/10 border-success/30 hover:bg-success/20' : subJob.status === 'running' ? 'bg-primary/10 border-primary/30 hover:bg-primary/20' : subJob.status === 'failed' ? 'bg-error/10 border-error/30 hover:bg-error/20' : 'bg-base-200 border-base-300 hover:bg-base-300'}"
-                        on:click={() => {
-                          selectedFlow = subJob;
-                          // TODO: Show individual flow report
-                          console.log('Selected flow:', subJob.job_name, subJob);
-                        }}
-                      >
-                        <div class="flex items-center gap-2">
-                          {#if subJob.status === 'completed'}
-                            <div class="w-2 h-2 rounded-full bg-success"></div>
-                          {:else if subJob.status === 'running'}
-                            <div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                          {:else if subJob.status === 'failed'}
-                            <div class="w-2 h-2 rounded-full bg-error"></div>
-                          {:else}
-                            <div class="w-2 h-2 rounded-full bg-base-300"></div>
-                          {/if}
-                          <span class="text-xs font-medium truncate">{subJob.job_name}</span>
-                        </div>
-                      </button>
-                    {/each}
-                  </div>
-                </div>
-              {/if}
-            </div>
-          {/if}
-
-          <!-- PROMINENT REPORT SECTION -->
-          {#if researchResult?.comprehensive_report?.comprehensive_analysis}
-            <!-- Key Insights Section - Prominent display at top -->
-            {#if researchResult.key_insights?.critical_insights}
-              <div class="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-xl p-8 border-2 border-primary/30 shadow-lg mb-8">
-                <div class="flex items-center gap-4 mb-6">
-                  <div class="text-primary text-3xl">
-                    <Lightbulb class="w-8 h-8" />
-                  </div>
-                  <h3 class="text-2xl font-bold text-primary">Key Investment Insights</h3>
-                  <div class="badge badge-primary badge-lg">Investment Summary</div>
-                </div>
-                
-                <div class="prose prose-lg max-w-none
-                            prose-headings:text-primary prose-headings:font-bold
-                            prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
-                            prose-p:text-base-content prose-p:leading-relaxed prose-p:mb-4
-                            prose-strong:text-primary prose-strong:font-semibold
-                            prose-ol:space-y-3 prose-ul:space-y-3
-                            prose-li:text-base-content prose-li:leading-relaxed prose-li:mb-2
-                            prose-code:bg-primary/10 prose-code:px-2 prose-code:py-1 prose-code:rounded
-                            prose-blockquote:border-l-4 prose-blockquote:border-primary 
-                            prose-blockquote:bg-primary/5 prose-blockquote:p-4 prose-blockquote:rounded-r">
-                  {@html renderMarkdown(researchResult.key_insights.critical_insights)}
-                </div>
-              </div>
-            {/if}
-            
-            <div class="divider divider-primary"></div>
-            
-            <!-- Comprehensive Technical Analysis Section -->
-            <div class="mb-6">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="text-secondary text-2xl">
-                  <TrendingUp class="w-7 h-7" />
-                </div>
-                <h3 class="text-xl font-bold text-secondary">Comprehensive Technical Report</h3>
-                <div class="badge badge-secondary badge-lg">Technical Analysis</div>
-              </div>
-              <div class="text-sm text-base-content/70 mb-4">
-                Exhaustive technical analysis with detailed financial calculations, methodologies, and quantitative findings
-              </div>
-              
-              <div class="prose prose-lg max-w-none 
-                          prose-headings:text-primary prose-headings:font-bold
-                          prose-h1:text-3xl prose-h1:border-b prose-h1:border-primary prose-h1:pb-3
-                          prose-h2:text-2xl prose-h2:text-secondary prose-h2:mt-8 prose-h2:mb-4
-                          prose-h3:text-xl prose-h3:text-accent prose-h3:mt-6 prose-h3:mb-3
-                          prose-p:text-base-content prose-p:leading-relaxed prose-p:mb-4
-                          prose-strong:text-primary prose-strong:font-semibold
-                          prose-ul:space-y-2 prose-ol:space-y-2
-                          prose-li:text-base-content
-                          prose-blockquote:border-l-4 prose-blockquote:border-primary 
-                          prose-blockquote:bg-base-200 prose-blockquote:p-4 prose-blockquote:rounded-r
-                          prose-code:bg-base-200 prose-code:px-2 prose-code:py-1 prose-code:rounded
-                          prose-pre:bg-base-300 prose-pre:p-4 prose-pre:rounded-lg
-                          prose-table:w-full prose-table:border-collapse
-                          prose-th:bg-primary prose-th:text-primary-content prose-th:p-3
-                          prose-td:border prose-td:border-base-300 prose-td:p-3
-                          prose-hr:border-base-300 prose-hr:my-8">
-                {@html renderMarkdown(researchResult.comprehensive_report.comprehensive_analysis)}
-              </div>
-            </div>
-            
-            <div class="divider divider-primary mt-8"></div>
-            
-            <!-- Report Footer -->
-            <div class="flex justify-between items-center text-sm text-base-content/70 mt-4">
-              <div class="flex items-center gap-2">
-                <div class="badge badge-outline badge-sm">AI Generated</div>
-                <div class="badge badge-outline badge-sm">Veratheon Research</div>
-              </div>
-              <div>
-                Generated: {new Date().toLocaleString()}
-              </div>
-            </div>
-          {:else if !isRunningResearch}
-            <!-- Fallback when no report is available -->
-            <div class="text-center py-12">
-              <div class="text-6xl mb-4">
-                <TrendingUp class="w-16 h-16 mx-auto text-primary" />
-              </div>
-              <h3 class="text-xl font-semibold mb-2">Research Complete</h3>
-              <p class="text-base-content/70">
-                Research analysis completed but comprehensive report is not available.
-              </p>
-            </div>
-          {/if}
+          <ResearchReportDisplay
+            {researchResult}
+            {isRunningResearch}
+            {stockSymbol}
+            {renderMarkdown}
+          />
         </div>
       </div>
     </div>
   {/if}
 
-  <!-- Process Details Modal -->
-  <div class="modal" class:modal-open={showModal}>
-    <div class="modal-box max-w-4xl">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="text-primary text-2xl">
-          <ListEnd class="w-7 h-7" />
-        </div>
-        <h3 class="font-bold text-xl text-primary">Research Process Details</h3>
-      </div>
-      
-      <div class="mb-4">
-        <div class="stats shadow w-full">
-          <div class="stat">
-            <div class="stat-title">Total Steps</div>
-            <div class="stat-value text-primary">{jobStatus?.steps?.length || 0}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-title">Symbol</div>
-            <div class="stat-value text-secondary">{stockSymbol.toUpperCase() || 'N/A'}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-title">Status</div>
-            <div class="stat-value text-accent">
-              {#if isRunningResearch}
-                In Progress
-              {:else}
-                Complete
-              {/if}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="py-4">
-        {#if !jobStatus?.steps || jobStatus.steps.length === 0}
-          <div class="text-center py-8 text-base-content/60">
-            No process steps recorded yet
-          </div>
-        {:else}
-          <div class="space-y-3 max-h-96 overflow-y-auto">
-            {#each jobStatus.steps as step, index (step.timestamp)}
-              <div class="card bg-base-100 shadow-sm border border-base-200">
-                <div class="card-body p-4">
-                  <div class="flex justify-between items-start">
-                    <div class="flex items-start gap-3 flex-1">
-                      <div class="w-3 h-3 rounded-full mt-2 {step.status === 'completed' ? 'bg-success' : step.status === 'running' ? 'bg-info' : 'bg-secondary'}"></div>
-                      <div class="flex-1">
-                        <div class="font-medium text-base-content mb-1">
-                          {step.step}
-                        </div>
-                        <div class="text-sm text-base-content/60">
-                          Step {index + 1} • {new Date(step.timestamp).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div class="badge {step.status === 'completed' ? 'badge-success' : step.status === 'running' ? 'badge-info' : 'badge-secondary'} badge-sm">
-                      {step.status}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            {/each}
-          </div>
-        {/if}
-      </div>
-      
-      <div class="modal-action">
-        <button class="btn btn-primary" on:click={() => showModal = false}>Close</button>
-      </div>
-    </div>
-  </div>
+  <ProcessDetailsModal
+    bind:isOpen={showModal}
+    {jobStatus}
+    {stockSymbol}
+    {isRunningResearch}
+    onClose={() => showModal = false}
+  />
 </div>

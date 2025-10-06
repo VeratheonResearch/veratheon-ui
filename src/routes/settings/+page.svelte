@@ -74,46 +74,45 @@
 		goto('/');
 	};
 </script>
-
-<div class="min-h-screen bg-base-200 p-6">
+<div class="min-h-screen bg-base-200 p-2 md:p-6">
 	<div class="max-w-5xl mx-auto">
-		<h1 class="text-2xl font-bold mb-6">Settings</h1>
+		<h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Settings</h1>
 
 		{#if loading}
-			<div class="flex justify-center py-12">
-				<span class="loading loading-spinner loading-lg"></span>
-			</div>
-		{:else}
-			<div class="flex gap-6">
+		<div class="flex justify-center py-12">
+			<span class="loading loading-spinner loading-lg"></span>
+		</div>
+	{:else}
+			<div class="flex flex-col md:flex-row gap-3 md:gap-6">
 				<!-- Sidebar Navigation -->
-				<div class="w-56 flex-shrink-0">
-					<div class="bg-base-100 rounded-lg shadow-md p-3">
-						<ul class="menu gap-1">
-							<li>
+				<div class="w-full md:w-56 md:flex-shrink-0">
+					<div class="bg-base-100 rounded-lg shadow-md p-2 md:p-3">
+						<ul class="menu menu-horizontal md:menu-vertical gap-1 flex-nowrap md:flex-wrap overflow-x-auto md:overflow-x-visible">
+							<li class="flex-shrink-0">
 								<button
-									class={`font-medium ${activeTab === 'account' ? 'active bg-primary text-primary-content' : 'hover:bg-base-200'}`}
+									class={`font-medium text-xs md:text-sm whitespace-nowrap ${activeTab === 'account' ? 'active bg-primary text-primary-content' : 'hover:bg-base-200'}`}
 									onclick={() => (activeTab = 'account')}
 								>
-									<User class="h-4 w-4" />
-									Account
+									<User class="h-3 w-3 md:h-4 md:w-4" />
+									<span class="hidden sm:inline">Account</span>
 								</button>
 							</li>
-							<li>
+							<li class="flex-shrink-0">
 								<button
-									class={`font-medium ${activeTab === 'model' ? 'active bg-primary text-primary-content' : 'hover:bg-base-200'}`}
+									class={`font-medium text-xs md:text-sm whitespace-nowrap ${activeTab === 'model' ? 'active bg-primary text-primary-content' : 'hover:bg-base-200'}`}
 									onclick={() => (activeTab = 'model')}
 								>
-									<Monitor class="h-4 w-4" />
-									Model Preferences
+									<Monitor class="h-3 w-3 md:h-4 md:w-4" />
+									<span class="hidden sm:inline">Model Preferences</span>
 								</button>
 							</li>
-							<li>
+							<li class="flex-shrink-0">
 								<button
-									class={`font-medium ${activeTab === 'data' ? 'active bg-primary text-primary-content' : 'hover:bg-base-200'}`}
+									class={`font-medium text-xs md:text-sm whitespace-nowrap ${activeTab === 'data' ? 'active bg-primary text-primary-content' : 'hover:bg-base-200'}`}
 									onclick={() => (activeTab = 'data')}
 								>
-									<Database class="h-4 w-4" />
-									Data Controls
+									<Database class="h-3 w-3 md:h-4 md:w-4" />
+									<span class="hidden sm:inline">Data Controls</span>
 								</button>
 							</li>
 						</ul>
@@ -121,8 +120,8 @@
 				</div>
 
 					<!-- Content Area -->
-				<div class="flex-1">
-					<div class="bg-base-100 rounded-lg shadow-md p-6">
+				<div class="flex-1 min-w-0">
+					<div class="bg-base-100 rounded-lg shadow-md p-3 md:p-6">
 						{#if successMessage}
 							<div class="alert alert-success mb-4">
 								<CircleCheckBig class="h-5 w-5" />
@@ -139,12 +138,12 @@
 
 						{#if activeTab === 'account'}
 							<!-- Account Section -->
-							<div class="space-y-4">
+							<div class="space-y-3 md:space-y-4">
 								<div class="flex items-center gap-2">
-									<User class="h-5 w-5" />
-									<h2 class="text-xl font-bold">Account</h2>
+									<User class="h-4 w-4 md:h-5 md:w-5" />
+									<h2 class="text-lg md:text-xl font-bold">Account</h2>
 								</div>
-								<p class="text-sm text-base-content/70">Manage your account information</p>
+								<p class="text-xs md:text-sm text-base-content/70">Manage your account information</p>
 								<div class="divider my-3"></div>
 								<div class="form-control">
 									<label class="label">
@@ -167,12 +166,12 @@
 							</div>
 						{:else if activeTab === 'model'}
 							<!-- Model Preferences Section -->
-							<div class="space-y-4">
+							<div class="space-y-3 md:space-y-4">
 								<div class="flex items-center gap-2">
-									<Monitor class="h-5 w-5" />
-									<h2 class="text-xl font-bold">Model Preferences</h2>
+									<Monitor class="h-4 w-4 md:h-5 md:w-5" />
+									<h2 class="text-lg md:text-xl font-bold">Model Preferences</h2>
 								</div>
-								<p class="text-sm text-base-content/70">Configure your AI model settings</p>
+								<p class="text-xs md:text-sm text-base-content/70">Configure your AI model settings</p>
 								<div class="divider my-3"></div>
 								<div class="form-control">
 									<label class="label">
@@ -192,25 +191,25 @@
 							</div>
 						{:else if activeTab === 'data'}
 							<!-- Data Controls Section -->
-							<div class="space-y-4">
+							<div class="space-y-3 md:space-y-4">
 								<div class="flex items-center gap-2">
-									<Database class="h-5 w-5" />
-									<h2 class="text-xl font-bold">Data Controls</h2>
+									<Database class="h-4 w-4 md:h-5 md:w-5" />
+									<h2 class="text-lg md:text-xl font-bold">Data Controls</h2>
 								</div>
-								<p class="text-sm text-base-content/70">Manage your data and privacy settings</p>
+								<p class="text-xs md:text-sm text-base-content/70">Manage your data and privacy settings</p>
 								<div class="divider my-3"></div>
 								<p class="text-sm text-base-content/70">Data control settings coming soon...</p>
 							</div>
 						{/if}
 
 						<!-- Action Buttons -->
-						<div class="divider my-4"></div>
-						<div class="flex justify-end gap-2">
-							<button class="btn btn-ghost" onclick={handleCancel} disabled={saving}>
-								<X class="h-4 w-4" />
+						<div class="divider my-3 md:my-4"></div>
+						<div class="flex flex-col sm:flex-row justify-end gap-2">
+							<button class="btn btn-ghost btn-sm md:btn-md w-full sm:w-auto" onclick={handleCancel} disabled={saving}>
+								<X class="h-3 w-3 md:h-4 md:w-4" />
 								Cancel
 							</button>
-							<button class="btn btn-primary" onclick={handleSave} disabled={saving}>
+							<button class="btn btn-primary btn-sm md:btn-md w-full sm:w-auto" onclick={handleSave} disabled={saving}>
 								{#if saving}
 									<span class="loading loading-spinner loading-sm"></span>
 								{:else}

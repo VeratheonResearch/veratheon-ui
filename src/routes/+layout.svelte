@@ -142,7 +142,7 @@
 			<NavBar {user} {theme} onToggleTheme={toggleTheme} />
 		{/if}
 
-		<main class="container mx-auto w-full flex-1 px-4 py-6">
+		<main class="container mx-auto w-full flex-1 px-1 md:px-4 py-2 md:py-6">
 			{@render children?.()}
 		</main>
 

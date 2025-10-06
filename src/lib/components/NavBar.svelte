@@ -16,18 +16,18 @@
 </script>
 
 <div class="bg-base-100 shadow">
-	<div class="container mx-auto px-4">
-		<div class="flex justify-between items-center h-16">
+	<div class="container mx-auto px-2 md:px-4">
+		<div class="flex justify-between items-center h-12 md:h-16">
 			<!-- Left: Title/Brand -->
 			<div>
-				<a class="text-xl font-bold" href="/" style="font-family: 'Major Mono Display', monospace;">Veratheon</a>
+				<a class="text-base md:text-xl font-bold" href="/" style="font-family: 'Major Mono Display', monospace;">Veratheon</a>
 			</div>
 
 			<!-- Middle: Navigation (desktop only) -->
 			<DesktopNav />
 
 			<!-- Right: Theme Toggle + GitHub + User Avatar + Mobile Menu -->
-			<div class="flex items-center gap-2">
+			<div class="flex items-center gap-1 md:gap-2">
 				<ThemeToggle {theme} onToggle={onToggleTheme} />
 				<GitHubLink />
 

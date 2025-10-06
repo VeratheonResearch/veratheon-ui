@@ -11,14 +11,14 @@
 </script>
 
 <div
-	class="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-xl p-8 border-2 border-primary/30 shadow-lg mb-8"
+	class="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-xl p-3 md:p-6 lg:p-8 border-2 border-primary/30 shadow-lg mb-4 md:mb-8"
 >
-	<div class="flex items-center gap-4 mb-6">
-		<div class="text-primary text-3xl">
-			<Lightbulb class="w-8 h-8" />
+	<div class="flex flex-wrap items-center gap-2 md:gap-4 mb-4 md:mb-6">
+		<div class="text-primary">
+			<Lightbulb class="w-6 h-6 md:w-8 md:h-8" />
 		</div>
-		<h3 class="text-2xl font-bold text-primary">Key Investment Insights</h3>
-		<div class="badge badge-primary badge-lg">Investment Summary</div>
+		<h3 class="text-lg md:text-xl lg:text-2xl font-bold text-primary">Key Investment Insights</h3>
+		<div class="badge badge-primary badge-sm md:badge-md lg:badge-lg whitespace-nowrap">Investment Summary</div>
 	</div>
 
 	<div

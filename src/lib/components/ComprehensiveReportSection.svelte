@@ -10,15 +10,15 @@
 	} = $props();
 </script>
 
-<div class="mb-6">
-	<div class="flex items-center gap-3 mb-4">
-		<div class="text-secondary text-2xl">
-			<TrendingUp class="w-7 h-7" />
+<div class="mb-4 md:mb-6">
+	<div class="flex flex-wrap items-center gap-2 md:gap-3 mb-3 md:mb-4">
+		<div class="text-secondary">
+			<TrendingUp class="w-5 h-5 md:w-6 md:w-6 lg:w-7 lg:h-7" />
 		</div>
-		<h3 class="text-xl font-bold text-secondary">Comprehensive Technical Report</h3>
-		<div class="badge badge-secondary badge-lg">Technical Analysis</div>
+		<h3 class="text-base md:text-lg lg:text-xl font-bold text-secondary">Comprehensive Technical Report</h3>
+		<div class="badge badge-secondary badge-sm md:badge-md lg:badge-lg whitespace-nowrap">Technical Analysis</div>
 	</div>
-	<div class="text-sm text-base-content/70 mb-4">
+	<div class="text-xs md:text-sm text-base-content/70 mb-3 md:mb-4">
 		Exhaustive technical analysis with detailed financial calculations, methodologies, and
 		quantitative findings
 	</div>

@@ -26,16 +26,16 @@
 </script>
 
 {#if subJobs.length > 0}
-	<div class="mb-8 border border-base-300 rounded-lg overflow-hidden">
+	<div class="mb-4 md:mb-8 border border-base-300 rounded-lg overflow-hidden">
 		<!-- Header with toggle -->
 		<button
-			class="w-full p-4 bg-base-200 hover:bg-base-300 transition-colors flex items-center justify-between"
+			class="w-full p-2 md:p-4 bg-base-200 hover:bg-base-300 transition-colors flex items-center justify-between"
 			on:click={() => (showFlows = !showFlows)}
 		>
-			<div class="flex items-center gap-3">
-				<ChartNoAxesCombined class="w-5 h-5 text-primary" />
-				<span class="font-semibold text-base-content">Research Flows</span>
-				<span class="badge badge-primary">{subJobs.length} flows</span>
+			<div class="flex items-center gap-2 md:gap-3">
+				<ChartNoAxesCombined class="w-4 h-4 md:w-5 md:h-5 text-primary" />
+				<span class="text-sm md:text-base font-semibold text-base-content">Research Flows</span>
+				<span class="badge badge-primary badge-sm md:badge-md">{subJobs.length} flows</span>
 				{#if !isRunningResearch}
 					<span class="badge badge-success">Completed</span>
 				{/if}
@@ -52,11 +52,11 @@
 
 		<!-- Collapsible content -->
 		{#if showFlows}
-			<div class="p-4" transition:slide>
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+			<div class="p-2 md:p-4" transition:slide>
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
 					{#each subJobs as subJob (subJob.sub_job_id)}
 						<button
-							class="p-3 rounded-lg border text-left transition-all hover:shadow-md {subJob.status ===
+							class="p-2 md:p-3 rounded-lg border text-left transition-all hover:shadow-md {subJob.status ===
 							'completed'
 								? 'bg-success/10 border-success/30 hover:bg-success/20'
 								: subJob.status === 'running'

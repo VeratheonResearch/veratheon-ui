@@ -40,19 +40,19 @@
 	} = $props();
 </script>
 
-<div class="flex items-center justify-between mb-6">
-	<div class="flex items-center gap-4">
-		<div class="text-primary text-3xl">
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-6 gap-3">
+	<div class="flex items-center gap-2 md:gap-4">
+		<div class="text-primary">
 			{#if isRunningResearch}
-				<span class="loading loading-spinner loading-lg text-primary"></span>
+				<span class="loading loading-spinner loading-md md:loading-lg text-primary"></span>
 			{:else if researchResult}
-				<ChartNoAxesCombined class="w-8 h-8" />
+				<ChartNoAxesCombined class="w-6 h-6 md:w-8 md:h-8" />
 			{:else}
-				<CircleCheckBig class="w-8 h-8" />
+				<CircleCheckBig class="w-6 h-6 md:w-8 md:h-8" />
 			{/if}
 		</div>
 		<div>
-			<h2 class="text-3xl font-bold text-primary">
+			<h2 class="text-lg md:text-2xl lg:text-3xl font-bold text-primary">
 				{#if isRunningResearch}
 					Research in Progress
 				{:else if researchResult}
@@ -61,10 +61,10 @@
 					Research Complete
 				{/if}
 			</h2>
-			<div class="flex items-center gap-3 mt-1">
-				<p class="text-base-content/70">
+			<div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 mt-1">
+				<p class="text-xs md:text-sm text-base-content/70">
 					{#if isRunningResearch}
-						Analyzing {stockSymbol.toUpperCase()} • Job ID: {currentJobId || 'N/A'}
+						Analyzing {stockSymbol.toUpperCase()}
 					{:else if researchResult}
 						Comprehensive market analysis complete
 					{:else}
@@ -72,7 +72,7 @@
 					{/if}
 				</p>
 				{#if researchResult}
-					<div class="badge badge-primary badge-lg">Comprehensive Analysis</div>
+					<div class="badge badge-primary badge-sm md:badge-md">Comprehensive Analysis</div>
 				{/if}
 			</div>
 		</div>
@@ -80,9 +80,9 @@
 
 	<!-- Process Toggle Button -->
 	{#if jobStatus?.steps && jobStatus.steps.length > 0}
-		<div class="flex gap-2">
-			<button class="btn btn-outline btn-secondary" on:click={onViewProcess}>
-				View Process ({jobStatus.steps.length} steps)
+		<div class="flex gap-2 w-full md:w-auto">
+			<button class="btn btn-outline btn-secondary btn-sm md:btn-md w-full md:w-auto" on:click={onViewProcess}>
+				View Process ({jobStatus.steps.length})
 			</button>
 		</div>
 	{/if}

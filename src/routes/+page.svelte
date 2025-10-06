@@ -335,8 +335,8 @@
   });
 </script>
 
-<div class="container mx-auto p-6">
-  <div class="mb-8">
+<div class="container mx-auto p-2 md:p-6">
+  <div class="mb-4 md:mb-8">
     <ResearchInputCard
       bind:stockSymbol
       bind:forceRecompute
@@ -348,10 +348,10 @@
 
   <!-- Research & Status Unified Section -->
   {#if isRunningResearch || jobStatus || researchResult}
-    <div class="mt-8" transition:slide={{ duration: 400 }}>
+    <div class="mt-4 md:mt-8" transition:slide={{ duration: 400 }}>
       <!-- Unified Research Card -->
       <div class="card bg-base-100 shadow-2xl border border-primary/20">
-        <div class="card-body p-8">
+        <div class="card-body p-3 md:p-6 lg:p-8">
           <ResearchStatusHeader
             {isRunningResearch}
             {researchResult}

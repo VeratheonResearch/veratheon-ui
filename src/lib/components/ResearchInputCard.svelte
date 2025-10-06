@@ -17,17 +17,17 @@
 </script>
 
 <div class="card bg-base-100 shadow-lg border border-base-200">
-	<div class="card-body p-6">
-		<h2 class="card-title text-xl font-bold text-primary mb-4">Consensus EPS Validation</h2>
+	<div class="card-body p-3 md:p-6">
+		<h2 class="card-title text-base md:text-xl font-bold text-primary mb-2 md:mb-4">Consensus EPS Validation</h2>
 
-		<div class="flex flex-wrap gap-6 items-end">
+		<div class="flex flex-col gap-3">
 			<!-- Stock Symbol Input with Ticker Search -->
-			<div class="form-control w-80">
-				<label for="stock-symbol" class="label pb-2">
-					<span class="label-text font-medium text-base-content">Stock Symbol or Company Name</span>
+			<div class="form-control w-full">
+				<label for="stock-symbol" class="label pb-1">
+					<span class="label-text text-sm md:text-base font-medium text-base-content">Stock Symbol or Company Name</span>
 				</label>
 				<div class="flex items-center gap-2">
-					<div class="w-full">
+					<div class="flex-1">
 						<TickerSearch
 							placeholder="Search for a stock..."
 							on:select={(e) => {
@@ -41,18 +41,15 @@
 				</div>
 			</div>
 
-			<!-- Spacer -->
-			<div class="flex-1"></div>
-
 			<!-- Recompute and Button Group -->
-			<div class="flex items-center gap-3">
+			<div class="flex flex-col md:flex-row items-stretch md:items-center gap-2">
 				<!-- Recompute Checkbox -->
-				<div class="flex items-center gap-2">
-					<label for="force-recompute" class="text-sm text-base-content/70">Recompute</label>
+				<div class="flex items-center justify-center gap-2 order-2 md:order-1">
+					<label for="force-recompute" class="text-xs md:text-sm text-base-content/70">Recompute</label>
 					<input
 						id="force-recompute"
 						type="checkbox"
-						class="checkbox checkbox-primary checkbox-lg"
+						class="checkbox checkbox-primary checkbox-sm md:checkbox-md"
 						bind:checked={forceRecompute}
 						disabled={isRunningResearch}
 					/>
@@ -60,7 +57,7 @@
 
 				<!-- Start Research Button -->
 				<button
-					class="btn btn-primary btn-lg shadow-md"
+					class="btn btn-primary btn-sm md:btn-md shadow-md w-full md:w-auto order-1 md:order-2"
 					class:btn-disabled={isRunningResearch || !stockSymbol.trim()}
 					on:click={onStartResearch}
 					disabled={isRunningResearch || !stockSymbol.trim()}

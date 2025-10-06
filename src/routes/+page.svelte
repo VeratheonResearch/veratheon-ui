@@ -6,7 +6,6 @@
   import ResearchStatusHeader from '$lib/components/ResearchStatusHeader.svelte';
   import ResearchFlowsSection from '$lib/components/ResearchFlowsSection.svelte';
   import ResearchReportDisplay from '$lib/components/ResearchReportDisplay.svelte';
-  import ProcessDetailsModal from '$lib/components/ProcessDetailsModal.svelte';
   import { supabase } from '$lib/supabase';
   import { page } from '$app/stores';
   import { renderMarkdown } from '$lib/utils/markdown';
@@ -27,19 +26,8 @@
   let currentJobId: string | null = null;
   let jobStatus: JobStatus | null = null;
   let subJobs: SubJob[] = [];  // Track all subjobs
-  let showModal = false;
   let showFlows = true;  // Control flow boxes visibility
   let selectedFlow: SubJob | null = null;  // Track selected flow for future report viewing
-
-  $: if (showModal) {
-    // Scroll to bottom of modal when opened
-    setTimeout(() => {
-      const modalContent = document.querySelector('.modal-box .space-y-2');
-      if (modalContent) {
-        modalContent.scrollTop = modalContent.scrollHeight;
-      }
-    }, 10);
-  }
 
   let isReconnecting = false;
 
@@ -143,23 +131,52 @@
 
 
   // Load historical job if passed via navigation state
-  function loadHistoricalJob() {
+  async function loadHistoricalJob() {
     const state = $page.state as any;
     if (state?.loadJob) {
       const { symbol, result, jobStatus: mainJob, subJobs: subs, steps } = state.loadJob;
 
-      // Populate the UI with historical data
+      // Populate the UI with initial historical data
       stockSymbol = symbol;
-      researchResult = result;
-      jobStatus = {
-        ...mainJob,
-        steps: steps || []
-      };
-      subJobs = subs || [];
       currentJobId = mainJob.main_job_id;
-      isRunningResearch = false;
 
-      console.log('Loaded historical job:', symbol);
+      console.log('Loading historical job:', symbol, 'Status from history:', mainJob.status);
+
+      // Always sync from database first to get the latest status
+      // This ensures we have the most up-to-date information
+      await realtimeResearch.syncJobStatusFromDatabase(mainJob.main_job_id);
+
+      // After syncing, check the current status from the database
+      // If sync didn't update jobStatus (e.g., no database access), use historical data
+      if (!jobStatus) {
+        jobStatus = {
+          ...mainJob,
+          steps: steps || []
+        };
+        subJobs = subs || [];
+        researchResult = result;
+      }
+
+      // Determine if job is still running based on latest status
+      const currentStatus = jobStatus?.status || mainJob.status;
+      const isStillRunning = currentStatus !== 'completed' && currentStatus !== 'failed';
+      
+      if (isStillRunning) {
+        console.log('Job is still running, starting realtime tracking:', symbol, 'Status:', currentStatus);
+        isRunningResearch = true;
+        
+        // Start tracking the job with realtime updates
+        // This will also sync from database again
+        await realtimeResearch.startTracking(mainJob.main_job_id, symbol.toUpperCase());
+      } else {
+        console.log('Job is completed/failed, displaying results:', symbol, 'Status:', currentStatus);
+        isRunningResearch = false;
+        
+        // Ensure we have the result displayed
+        if (!researchResult && result) {
+          researchResult = result;
+        }
+      }
     }
   }
 
@@ -206,7 +223,6 @@
             {stockSymbol}
             {currentJobId}
             {jobStatus}
-            onViewProcess={() => showModal = true}
           />
 
           <ResearchFlowsSection
@@ -229,12 +245,4 @@
       </div>
     </div>
   {/if}
-
-  <ProcessDetailsModal
-    bind:isOpen={showModal}
-    {jobStatus}
-    {stockSymbol}
-    {isRunningResearch}
-    onClose={() => showModal = false}
-  />
 </div>

@@ -30,7 +30,7 @@
 		<!-- Header with toggle -->
 		<button
 			class="w-full p-2 md:p-4 bg-base-200 hover:bg-base-300 transition-colors flex items-center justify-between"
-			on:click={() => (showFlows = !showFlows)}
+			onclick={() => (showFlows = !showFlows)}
 		>
 			<div class="flex items-center gap-2 md:gap-3">
 				<ChartNoAxesCombined class="w-4 h-4 md:w-5 md:h-5 text-primary" />
@@ -64,7 +64,7 @@
 									: subJob.status === 'failed'
 										? 'bg-error/10 border-error/30 hover:bg-error/20'
 										: 'bg-base-200 border-base-300 hover:bg-base-300'}"
-							on:click={() => onFlowSelect(subJob)}
+							onclick={() => onFlowSelect(subJob)}
 						>
 							<div class="flex items-center gap-2">
 								{#if subJob.status === 'completed'}

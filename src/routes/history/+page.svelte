@@ -207,7 +207,7 @@
         {@const effectiveStatus = getEffectiveStatus(job)}
         <button
           class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow border border-base-200 text-left w-full"
-          on:click={() => loadJobDetails(job.id)}
+          onclick={() => loadJobDetails(job.id)}
         >
           <div class="card-body p-6">
             <div class="flex items-center justify-between">
@@ -260,7 +260,7 @@
               {displayStatus}
             </div>
           </div>
-          <button class="btn btn-sm btn-circle btn-ghost" on:click={() => selectedJob = null}>✕</button>
+          <button class="btn btn-sm btn-circle btn-ghost" onclick={() => selectedJob = null}>✕</button>
         </div>
 
       <div class="mb-4 text-sm text-base-content/70">
@@ -292,10 +292,10 @@
 
         <!-- Action Buttons -->
         <div class="flex gap-3 justify-end">
-          <button class="btn btn-outline" on:click={() => selectedJob = null}>
+          <button class="btn btn-outline" onclick={() => selectedJob = null}>
             Close
           </button>
-          <button class="btn btn-primary gap-2" on:click={() => viewFullReport(selectedJob)}>
+          <button class="btn btn-primary gap-2" onclick={() => viewFullReport(selectedJob)}>
             <FileText class="w-4 h-4" />
             View Full Report
           </button>
@@ -313,7 +313,7 @@
             </p>
             <div class="badge badge-warning badge-lg mb-6">Started {Math.floor(minutesElapsed)} minutes ago</div>
             <div>
-              <button class="btn btn-primary gap-2" on:click={() => viewFullReport(selectedJob)}>
+              <button class="btn btn-primary gap-2" onclick={() => viewFullReport(selectedJob)}>
                 View Live Progress
               </button>
             </div>
@@ -323,7 +323,7 @@
             <p class="text-base-content/70 mb-6">
               This job is currently running. You can close this and check back later.
             </p>
-            <button class="btn btn-primary gap-2" on:click={() => viewFullReport(selectedJob)}>
+            <button class="btn btn-primary gap-2" onclick={() => viewFullReport(selectedJob)}>
               View Live Progress
             </button>
           {/if}
@@ -337,7 +337,7 @@
           </div>
         </div>
         <div class="modal-action">
-          <button class="btn" on:click={() => selectedJob = null}>Close</button>
+          <button class="btn" onclick={() => selectedJob = null}>Close</button>
         </div>
       {:else}
         <div class="text-center py-12">
@@ -348,10 +348,10 @@
           </p>
         </div>
         <div class="modal-action">
-          <button class="btn" on:click={() => selectedJob = null}>Close</button>
+          <button class="btn" onclick={() => selectedJob = null}>Close</button>
         </div>
       {/if}
     </div>
-    <button class="modal-backdrop" on:click={() => selectedJob = null} aria-label="Close modal"></button>
+    <button class="modal-backdrop" onclick={() => selectedJob = null} aria-label="Close modal"></button>
   </div>
 {/if}

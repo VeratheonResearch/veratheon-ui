@@ -59,7 +59,7 @@
 				<button
 					class="btn btn-primary btn-sm md:btn-md shadow-md w-full md:w-auto order-1 md:order-2"
 					class:btn-disabled={isRunningResearch || !stockSymbol.trim()}
-					on:click={onStartResearch}
+					onclick={onStartResearch}
 					disabled={isRunningResearch || !stockSymbol.trim()}
 				>
 					{#if isRunningResearch}

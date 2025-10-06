@@ -28,15 +28,13 @@
 		researchResult,
 		stockSymbol,
 		currentJobId,
-		jobStatus,
-		onViewProcess
+		jobStatus
 	}: {
 		isRunningResearch: boolean;
 		researchResult: ResearchResult | null;
 		stockSymbol: string;
 		currentJobId: string | null;
 		jobStatus: JobStatus | null;
-		onViewProcess: () => void;
 	} = $props();
 </script>
 
@@ -77,13 +75,4 @@
 			</div>
 		</div>
 	</div>
-
-	<!-- Process Toggle Button -->
-	{#if jobStatus?.steps && jobStatus.steps.length > 0}
-		<div class="flex gap-2 w-full md:w-auto">
-			<button class="btn btn-outline btn-secondary btn-sm md:btn-md w-full md:w-auto" on:click={onViewProcess}>
-				View Process ({jobStatus.steps.length})
-			</button>
-		</div>
-	{/if}
 </div>

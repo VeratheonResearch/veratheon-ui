@@ -114,7 +114,7 @@
 		</div>
 
 		<div class="modal-action mt-3 md:mt-4">
-			<button class="btn btn-primary btn-sm md:btn-md w-full sm:w-auto" on:click={onClose}>Close</button>
+			<button class="btn btn-primary btn-sm md:btn-md w-full sm:w-auto" onclick={onClose}>Close</button>
 		</div>
 	</div>
 </div>

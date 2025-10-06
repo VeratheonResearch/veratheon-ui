@@ -16,8 +16,8 @@ export async function GET({ request }) {
 
     // Verify the user token is valid using anon key
     const supabaseAnon = createClient(
-      env.SUPABASE_URL || env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321',
-      env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || ''
+      env.SUPABASE_URL,
+      env.SUPABASE_ANON_KEY
     );
 
     const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token);
@@ -28,8 +28,8 @@ export async function GET({ request }) {
 
     // Use service role key to bypass RLS
     const supabaseService = createClient(
-      env.SUPABASE_URL || env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321',
-      env.SUPABASE_SERVICE_KEY || ''
+      env.SUPABASE_URL,
+      env.SUPABASE_SERVICE_ROLE_KEY
     );
 
     // Get all jobs for this user from user_research_history
@@ -112,8 +112,8 @@ export async function POST({ request }) {
 
     // First verify the user token is valid using anon key
     const supabaseAnon = createClient(
-      env.SUPABASE_URL || env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321',
-      env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || ''
+      env.SUPABASE_URL,
+      env.SUPABASE_ANON_KEY
     );
 
     const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token);
@@ -128,8 +128,8 @@ export async function POST({ request }) {
 
     // Use service role key to bypass RLS (we already verified the user above)
     const supabaseService = createClient(
-      env.SUPABASE_URL || env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321',
-      env.SUPABASE_SERVICE_KEY || ''
+      env.SUPABASE_URL,
+      env.SUPABASE_SERVICE_ROLE_KEY
     );
 
     // Insert into user_research_history using service role (bypasses RLS)

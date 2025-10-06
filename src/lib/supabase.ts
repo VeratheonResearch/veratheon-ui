@@ -20,6 +20,14 @@ export const supabase = browser
 			realtime: {
 				params: {
 					eventsPerSecond: 10
+				},
+				// Enable automatic reconnection
+				heartbeatIntervalMs: 30000, // Send heartbeat every 30s
+				reconnectAfterMs: (tries: number) => {
+					// Exponential backoff with jitter: 1s, 2s, 4s, 8s, max 10s
+					const baseDelay = Math.min(1000 * Math.pow(2, tries), 10000);
+					const jitter = Math.random() * 1000; // Add up to 1s jitter
+					return baseDelay + jitter;
 				}
 			}
 		})

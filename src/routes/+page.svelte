@@ -8,44 +8,13 @@
   import ResearchReportDisplay from '$lib/components/ResearchReportDisplay.svelte';
   import ProcessDetailsModal from '$lib/components/ProcessDetailsModal.svelte';
   import { supabase } from '$lib/supabase';
-  import type { RealtimeChannel } from '@supabase/supabase-js';
   import { page } from '$app/stores';
   import { renderMarkdown } from '$lib/utils/markdown';
   import { startResearch as apiStartResearch, checkJobStatus, saveJobToHistory } from '$lib/api/research';
+  import { createRealtimeResearch, type JobStatus, type SubJob } from '$lib/composables/useRealtimeResearch';
 
   // Configuration
   const MAX_STEPS = 29;
-
-  interface JobStep {
-    step: string;
-    timestamp: string;
-    status: string;
-  }
-
-  interface JobStatus {
-    job_id?: string;
-    main_job_id?: string;
-    sub_job_id?: string;
-    job_name?: string;
-    symbol?: string;
-    status?: string;
-    completed?: boolean;
-    result?: ResearchResult;
-    error?: string;
-    steps?: JobStep[];
-    created_at?: string;
-    updated_at?: string;
-  }
-
-  interface SubJob {
-    id: number;
-    job_name: string;
-    status: string;
-    sub_job_id: string;
-    created_at: string;
-    updated_at: string;
-    metadata?: any;
-  }
 
   let stockSymbol = '';
   $: if (stockSymbol.trim()) {
@@ -72,7 +41,34 @@
     }, 10);
   }
 
-  let realtimeChannel: RealtimeChannel | null = null;
+  let isReconnecting = false;
+
+  // Create realtime research manager
+  const realtimeResearch = createRealtimeResearch({
+    onJobUpdate: (status) => {
+      jobStatus = status;
+    },
+    onSubJobUpdate: (subJob) => {
+      // Check if subjob already exists
+      const existingIndex = subJobs.findIndex(j => j.sub_job_id === subJob.sub_job_id);
+      if (existingIndex >= 0) {
+        // Update existing subjob
+        subJobs[existingIndex] = subJob;
+        subJobs = [...subJobs]; // Trigger reactivity
+      } else {
+        // Add new subjob
+        subJobs = [...subJobs, subJob];
+      }
+    },
+    onComplete: (result) => {
+      researchResult = result;
+      isRunningResearch = false;
+    },
+    onError: (error) => {
+      alert(`Research failed: ${error}`);
+      isRunningResearch = false;
+    }
+  });
 
   // Update browser tab title with completion percentage
   $: {
@@ -135,171 +131,16 @@
       jobStatus = initialStatus;
 
       // Subscribe to real-time updates for this job
-      if (supabase) {
-        // Unsubscribe from previous channel if exists
-        if (realtimeChannel) {
-          await supabase.removeChannel(realtimeChannel);
-          realtimeChannel = null;
-        }
-
-        realtimeChannel = supabase
-          .channel(`research_job_${currentJobId}`)
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'research_jobs',
-              filter: `main_job_id=eq.${currentJobId}`
-            },
-            (payload) => {
-              console.log('Realtime job INSERT:', payload);
-              const newJob = payload.new;
-
-              // Add new subjob to list
-              if (newJob.sub_job_id) {
-                subJobs = [...subJobs, {
-                  id: newJob.id,
-                  job_name: newJob.job_name,
-                  status: newJob.status,
-                  sub_job_id: newJob.sub_job_id,
-                  created_at: newJob.created_at,
-                  updated_at: newJob.updated_at,
-                  metadata: newJob.metadata
-                }];
-              } else {
-                // This is the main job
-                jobStatus = {
-                  job_id: newJob.id,
-                  main_job_id: newJob.main_job_id,
-                  job_name: newJob.job_name,
-                  symbol: newJob.symbol,
-                  status: newJob.status,
-                  completed: newJob.status === 'completed',
-                  error: newJob.error,
-                  steps: newJob.metadata?.steps || [],
-                  created_at: newJob.created_at,
-                  updated_at: newJob.updated_at,
-                  result: newJob.metadata?.result
-                };
-              }
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'research_jobs',
-              filter: `main_job_id=eq.${currentJobId}`
-            },
-            (payload) => {
-              console.log('Realtime job UPDATE:', payload);
-              const updatedJob = payload.new;
-
-              // Update subjob if it has sub_job_id
-              if (updatedJob.sub_job_id) {
-                subJobs = subJobs.map(job =>
-                  job.sub_job_id === updatedJob.sub_job_id
-                    ? {
-                        ...job,
-                        status: updatedJob.status,
-                        updated_at: updatedJob.updated_at,
-                        metadata: updatedJob.metadata
-                      }
-                    : job
-                );
-              } else {
-                // Update main job status
-                jobStatus = {
-                  job_id: updatedJob.id,
-                  main_job_id: updatedJob.main_job_id,
-                  job_name: updatedJob.job_name,
-                  symbol: updatedJob.symbol,
-                  status: updatedJob.status,
-                  completed: updatedJob.status === 'completed',
-                  error: updatedJob.error,
-                  steps: updatedJob.metadata?.steps || [],
-                  created_at: updatedJob.created_at,
-                  updated_at: updatedJob.updated_at,
-                  result: updatedJob.metadata?.result
-                };
-              }
-
-              // Check if main flow is completed
-              if (updatedJob.job_name === 'main_flow' && updatedJob.status === 'completed') {
-                console.log('Research completed:', updatedJob.metadata?.result);
-                researchResult = updatedJob.metadata?.result as ResearchResult;
-                isRunningResearch = false;
-
-                // Unsubscribe after completion
-                if (realtimeChannel) {
-                  supabase.removeChannel(realtimeChannel);
-                  realtimeChannel = null;
-                }
-              } else if (updatedJob.job_name === 'main_flow' && updatedJob.status === 'failed') {
-                console.error('Research failed:', updatedJob.error);
-                alert(`Research failed: ${updatedJob.error}`);
-                isRunningResearch = false;
-
-                // Unsubscribe after failure
-                if (realtimeChannel) {
-                  supabase.removeChannel(realtimeChannel);
-                  realtimeChannel = null;
-                }
-              }
-            }
-          )
-          .subscribe((status) => {
-            console.log('Realtime subscription status:', status);
-          });
-      } else {
-        console.warn('Supabase client not available, falling back to polling');
-        // Fallback to polling if Supabase is not available
-        startPolling();
-      }
+      await realtimeResearch.startTracking(currentJobId, stockSymbol.trim().toUpperCase());
 
     } catch (error) {
       console.error('Research error:', error);
       alert(`Research failed: ${error.message}`);
       isRunningResearch = false;
-      if (realtimeChannel && supabase) {
-        supabase.removeChannel(realtimeChannel);
-        realtimeChannel = null;
-      }
+      realtimeResearch.cleanup();
     }
   }
 
-  // Fallback polling function (used if Supabase Realtime is not available)
-  function startPolling() {
-    const pollInterval = setInterval(async () => {
-      try {
-        if (!currentJobId) {
-          clearInterval(pollInterval);
-          return;
-        }
-
-        const status = await checkJobStatus(currentJobId, stockSymbol);
-        console.log('Polling job status:', status);
-
-        jobStatus = status;
-
-        if (status.completed) {
-          console.log('Research completed:', status.result);
-          researchResult = status.result as ResearchResult;
-          isRunningResearch = false;
-          clearInterval(pollInterval);
-        } else if (status.error) {
-          console.error('Research failed:', status.error);
-          alert(`Research failed: ${status.error}`);
-          isRunningResearch = false;
-          clearInterval(pollInterval);
-        }
-      } catch (error) {
-        console.error('Status check error:', error);
-      }
-    }, 3000);
-  }
 
   // Load historical job if passed via navigation state
   function loadHistoricalJob() {
@@ -322,16 +163,23 @@
     }
   }
 
+
   onMount(() => {
+    // Initialize realtime research with state updaters
+    realtimeResearch.initialize({
+      setJobStatus: (status) => { jobStatus = status; },
+      setSubJobs: (jobs) => { subJobs = jobs; },
+      setResearchResult: (result) => { researchResult = result; },
+      setIsRunningResearch: (running) => { isRunningResearch = running; },
+      setIsReconnecting: (reconnecting) => { isReconnecting = reconnecting; }
+    });
+
     // Check if we're loading a historical job
     loadHistoricalJob();
   });
 
   onDestroy(() => {
-    if (realtimeChannel && supabase) {
-      supabase.removeChannel(realtimeChannel);
-      realtimeChannel = null;
-    }
+    realtimeResearch.cleanup();
   });
 </script>
 

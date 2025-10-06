@@ -311,10 +311,12 @@
             <p class="text-base-content/70 mb-6">
               This job has been running for over 10 minutes without completion. It may have encountered an issue.
             </p>
-            <div class="badge badge-warning badge-lg mb-4">Started {Math.floor(minutesElapsed)} minutes ago</div>
-            <button class="btn btn-primary gap-2" on:click={() => viewFullReport(selectedJob)}>
-              View Live Progress
-            </button>
+            <div class="badge badge-warning badge-lg mb-6">Started {Math.floor(minutesElapsed)} minutes ago</div>
+            <div>
+              <button class="btn btn-primary gap-2" on:click={() => viewFullReport(selectedJob)}>
+                View Live Progress
+              </button>
+            </div>
           {:else}
             <Loader class="w-12 h-12 mx-auto text-info animate-spin mb-4" />
             <h3 class="text-lg font-semibold mb-2">Research In Progress</h3>

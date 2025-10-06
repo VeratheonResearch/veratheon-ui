@@ -39,7 +39,6 @@
 							>Stock Symbol or Company Name</span
 						>
 					</label>
-					<div class="w-full">
 						<TickerSearch
 							placeholder="Search for a stock..."
 							on:select={(e) => {
@@ -47,7 +46,6 @@
 								companyName = e.detail.name;
 							}}
 						/>
-					</div>
 				</div>
 
 				<button

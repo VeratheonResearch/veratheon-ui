@@ -86,7 +86,7 @@
 	}
 </script>
 
-<div class="ticker-search relative w-full">
+<div class="ticker-search relative max-w-xs">
 	<input
 		type="text"
 		bind:value={query}

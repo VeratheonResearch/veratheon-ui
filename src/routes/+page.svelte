@@ -8,6 +8,7 @@
   import ResearchReportDisplay from '$lib/components/ResearchReportDisplay.svelte';
   import { supabase } from '$lib/supabase';
   import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
   import { renderMarkdown } from '$lib/utils/markdown';
   import { startResearch as apiStartResearch, checkJobStatus, saveJobToHistory } from '$lib/api/research';
   import { createRealtimeResearch, type JobStatus, type SubJob } from '$lib/composables/useRealtimeResearch';
@@ -111,6 +112,12 @@
 
       currentJobId = startResult.job_id;
 
+      // Update URL with job_id and symbol for persistence across refreshes
+      const url = new URL(window.location.href);
+      url.searchParams.set('job_id', currentJobId);
+      url.searchParams.set('symbol', stockSymbol.trim().toUpperCase());
+      window.history.replaceState({}, '', url.toString());
+
       // Save to user history
       await saveJobToHistory(currentJobId, stockSymbol.trim().toUpperCase(), forceRecompute, getAccessToken);
 
@@ -130,6 +137,40 @@
   }
 
 
+  // Load job from URL params (for page refresh persistence)
+  async function loadJobFromUrl() {
+    const urlJobId = $page.url.searchParams.get('job_id');
+    const urlSymbol = $page.url.searchParams.get('symbol');
+
+    if (urlJobId && urlSymbol) {
+      console.log('Loading job from URL:', urlJobId, urlSymbol);
+
+      stockSymbol = urlSymbol;
+      currentJobId = urlJobId;
+
+      // Sync from database to get latest status
+      await realtimeResearch.syncJobStatusFromDatabase(urlJobId);
+
+      // After syncing, jobStatus should be populated by the state updater
+      // Check if job is still running
+      const currentStatus = jobStatus?.status;
+      const isStillRunning = currentStatus !== 'completed' && currentStatus !== 'failed';
+
+      if (isStillRunning) {
+        console.log('Job from URL is still running, starting realtime tracking');
+        isRunningResearch = true;
+        await realtimeResearch.startTracking(urlJobId, urlSymbol);
+      } else {
+        console.log('Job from URL is completed/failed, displaying results');
+        isRunningResearch = false;
+      }
+
+      return true; // Indicate that we loaded from URL
+    }
+
+    return false; // No job in URL
+  }
+
   // Load historical job if passed via navigation state
   async function loadHistoricalJob() {
     const state = $page.state as any;
@@ -139,6 +180,12 @@
       // Populate the UI with initial historical data
       stockSymbol = symbol;
       currentJobId = mainJob.main_job_id;
+
+      // Update URL to persist this job
+      const url = new URL(window.location.href);
+      url.searchParams.set('job_id', mainJob.main_job_id);
+      url.searchParams.set('symbol', symbol);
+      window.history.replaceState({}, '', url.toString());
 
       console.log('Loading historical job:', symbol, 'Status from history:', mainJob.status);
 
@@ -160,18 +207,18 @@
       // Determine if job is still running based on latest status
       const currentStatus = jobStatus?.status || mainJob.status;
       const isStillRunning = currentStatus !== 'completed' && currentStatus !== 'failed';
-      
+
       if (isStillRunning) {
         console.log('Job is still running, starting realtime tracking:', symbol, 'Status:', currentStatus);
         isRunningResearch = true;
-        
+
         // Start tracking the job with realtime updates
         // This will also sync from database again
         await realtimeResearch.startTracking(mainJob.main_job_id, symbol.toUpperCase());
       } else {
         console.log('Job is completed/failed, displaying results:', symbol, 'Status:', currentStatus);
         isRunningResearch = false;
-        
+
         // Ensure we have the result displayed
         if (!researchResult && result) {
           researchResult = result;
@@ -181,7 +228,7 @@
   }
 
 
-  onMount(() => {
+  onMount(async () => {
     // Initialize realtime research with state updaters
     realtimeResearch.initialize({
       setJobStatus: (status) => { jobStatus = status; },
@@ -191,8 +238,13 @@
       setIsReconnecting: (reconnecting) => { isReconnecting = reconnecting; }
     });
 
-    // Check if we're loading a historical job
-    loadHistoricalJob();
+    // Check URL params first (for page refresh persistence)
+    const loadedFromUrl = await loadJobFromUrl();
+
+    // If no URL params, check if we're loading from navigation state (history page)
+    if (!loadedFromUrl) {
+      await loadHistoricalJob();
+    }
   });
 
   onDestroy(() => {

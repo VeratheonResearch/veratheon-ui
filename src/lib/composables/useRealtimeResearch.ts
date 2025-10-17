@@ -242,6 +242,7 @@ export function createRealtimeResearch(callbacks?: RealtimeResearchCallbacks) {
 				(payload) => {
 					console.log('Realtime job UPDATE:', payload);
 					const updatedJob = payload.new;
+					console.log('🔍 DEBUG UPDATE: job_name=', updatedJob.job_name, 'status=', updatedJob.status, 'has_sub_job_id=', !!updatedJob.sub_job_id);
 
 					if (!stateUpdaters) return;
 
@@ -276,8 +277,14 @@ export function createRealtimeResearch(callbacks?: RealtimeResearchCallbacks) {
 						callbacks?.onJobUpdate?.(newJobStatus);
 
 						// Check if main flow is completed
+						console.log('🎯 DEBUG: Checking main flow completion - job_name:', updatedJob.job_name, 'status:', updatedJob.status);
 						if (updatedJob.job_name === 'main_flow' && updatedJob.status === 'completed') {
-							console.log('Research completed:', updatedJob.metadata?.result);
+							console.log('✅ Research completed! Metadata result:', updatedJob.metadata?.result);
+							console.log('📊 Result structure:', {
+								hasResult: !!updatedJob.metadata?.result,
+								hasComprehensiveReport: !!updatedJob.metadata?.result?.comprehensive_report,
+								hasComprehensiveAnalysis: !!updatedJob.metadata?.result?.comprehensive_report?.comprehensive_analysis
+							});
 							const result = updatedJob.metadata?.result as ResearchResult;
 							stateUpdaters.setResearchResult(result);
 							stateUpdaters.setIsRunningResearch(false);

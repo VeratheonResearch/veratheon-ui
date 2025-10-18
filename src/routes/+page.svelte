@@ -8,13 +8,13 @@
   import ResearchReportDisplay from '$lib/components/ResearchReportDisplay.svelte';
   import { supabase } from '$lib/supabase';
   import { page } from '$app/stores';
-  import { goto } from '$app/navigation';
+  import { replaceState } from '$app/navigation';
   import { renderMarkdown } from '$lib/utils/markdown';
   import { startResearch as apiStartResearch, checkJobStatus, saveJobToHistory } from '$lib/api/research';
   import { createRealtimeResearch, type JobStatus, type SubJob } from '$lib/composables/useRealtimeResearch';
 
-  // Configuration
-  const MAX_STEPS = 29;
+  // Total number of research steps (must match backend research_flow.py)
+  const TOTAL_RESEARCH_STEPS = 14;
 
   let stockSymbol = '';
   $: if (stockSymbol.trim()) {
@@ -62,8 +62,10 @@
   // Update browser tab title with completion percentage
   $: {
     if (typeof document !== 'undefined') {
-      if (isRunningResearch && jobStatus?.steps) {
-        const percentage = Math.round((jobStatus.steps.length / MAX_STEPS) * 100);
+      if (isRunningResearch && subJobs.length > 0) {
+        // Calculate percentage based on total expected steps (14)
+        const completedCount = subJobs.filter(j => j.status === 'completed').length;
+        const percentage = Math.round((completedCount / TOTAL_RESEARCH_STEPS) * 100);
         document.title = `Research ${percentage}% - ${stockSymbol.toUpperCase() || 'Veratheon Research'}`;
       } else if (researchResult) {
         document.title = `Complete - ${stockSymbol.toUpperCase() || 'Veratheon Research'}`;
@@ -113,10 +115,7 @@
       currentJobId = startResult.job_id;
 
       // Update URL with job_id and symbol for persistence across refreshes
-      const url = new URL(window.location.href);
-      url.searchParams.set('job_id', currentJobId);
-      url.searchParams.set('symbol', stockSymbol.trim().toUpperCase());
-      window.history.replaceState({}, '', url.toString());
+      replaceState(`?job_id=${currentJobId}&symbol=${stockSymbol.trim().toUpperCase()}`, {});
 
       // Save to user history
       await saveJobToHistory(currentJobId, stockSymbol.trim().toUpperCase(), forceRecompute, getAccessToken);
@@ -182,10 +181,7 @@
       currentJobId = mainJob.main_job_id;
 
       // Update URL to persist this job
-      const url = new URL(window.location.href);
-      url.searchParams.set('job_id', mainJob.main_job_id);
-      url.searchParams.set('symbol', symbol);
-      window.history.replaceState({}, '', url.toString());
+      replaceState(`?job_id=${mainJob.main_job_id}&symbol=${symbol}`, {});
 
       console.log('Loading historical job:', symbol, 'Status from history:', mainJob.status);
 

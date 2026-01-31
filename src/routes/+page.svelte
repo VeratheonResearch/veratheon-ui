@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
-  import type { ResearchResult } from '$lib/research-types';
+  import type { WorkflowResult } from '$lib/research-types';
   import ResearchInputCard from '$lib/components/ResearchInputCard.svelte';
   import ResearchStatusHeader from '$lib/components/ResearchStatusHeader.svelte';
   import ResearchFlowsSection from '$lib/components/ResearchFlowsSection.svelte';
@@ -24,7 +24,7 @@
   }
   let forceRecompute = false;
   let isRunningResearch = false;
-  let researchResult: ResearchResult | null = null;
+  let researchResult: WorkflowResult | null = null;
   let currentJobId: string | null = null;
   let jobStatus: JobStatus | null = null;
   let subJobs: SubJob[] = [];  // Track all subjobs
@@ -230,7 +230,7 @@
     realtimeResearch.initialize({
       setJobStatus: (status) => { jobStatus = status; },
       setSubJobs: (jobs) => { subJobs = jobs; },
-      setResearchResult: (result) => { researchResult = result; },
+      setWorkflowResult: (result) => { researchResult = result; },
       setIsRunningResearch: (running) => { isRunningResearch = running; },
       setIsReconnecting: (reconnecting) => { isReconnecting = reconnecting; }
     });

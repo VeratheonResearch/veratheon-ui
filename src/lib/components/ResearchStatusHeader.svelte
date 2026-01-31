@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChartNoAxesCombined, CircleCheckBig } from '@lucide/svelte';
-	import type { ResearchResult } from '$lib/research-types';
+	import type { WorkflowResult } from '$lib/research-types';
 
 	interface JobStep {
 		step: string;
@@ -16,7 +16,7 @@
 		symbol?: string;
 		status?: string;
 		completed?: boolean;
-		result?: ResearchResult;
+		result?: WorkflowResult;
 		error?: string;
 		steps?: JobStep[];
 		created_at?: string;
@@ -31,7 +31,7 @@
 		jobStatus
 	}: {
 		isRunningResearch: boolean;
-		researchResult: ResearchResult | null;
+		researchResult: WorkflowResult | null;
 		stockSymbol: string;
 		currentJobId: string | null;
 		jobStatus: JobStatus | null;

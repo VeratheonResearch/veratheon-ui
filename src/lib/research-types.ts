@@ -1,23 +1,74 @@
-// TypeScript interfaces matching Python Pydantic models
+// TypeScript interfaces matching Python dataclasses from veratheon-research
 
-export interface ComprehensiveReport {
-  comprehensive_analysis: string;
-  symbol: string;
-  company_name?: string;
-  report_date: string;
+/**
+ * Economic indicator with value and trend context.
+ * Maps to Python EconomicIndicator dataclass.
+ */
+export interface EconomicIndicator {
+  name: string;
+  value: string | null;
+  previous_value: string | null;
+  date: string | null;
+  trend: 'up' | 'down' | 'stable' | null;
+  context: string | null;
+  error: string | null;
 }
 
-export interface KeyInsights {
-  critical_insights: string;
+/**
+ * Market/volatility indicator with price data.
+ * Maps to Python MarketIndicator dataclass.
+ */
+export interface MarketIndicator {
+  name: string;
   symbol: string;
-  company_name?: string;
-  report_date: string;
+  price: string | null;
+  change: string | null;
+  change_percent: string | null;
+  date: string | null;
+  error: string | null;
 }
 
-export interface ResearchResult {
+/**
+ * Macro economic report with all indicators.
+ * Maps to Python MacroReport dataclass (via to_dict()).
+ */
+export interface MacroReport {
+  generated_at: string;
+  inflation: {
+    cpi?: EconomicIndicator;
+    inflation_rate?: EconomicIndicator;
+  };
+  employment: {
+    unemployment_rate?: EconomicIndicator;
+    nonfarm_payroll?: EconomicIndicator;
+  };
+  interest_rates: {
+    fed_funds_rate?: EconomicIndicator;
+    treasury_10y?: EconomicIndicator;
+    treasury_2y?: EconomicIndicator;
+  };
+  growth: {
+    real_gdp?: EconomicIndicator;
+  };
+  market: {
+    vix?: MarketIndicator;
+    sp500?: MarketIndicator;
+    sector_etf?: MarketIndicator;
+  };
+}
+
+/**
+ * Result from the autonomous research workflow.
+ * Maps to Python WorkflowResult dataclass.
+ */
+export interface WorkflowResult {
   symbol: string;
-  comprehensive_report: ComprehensiveReport;
-  key_insights: KeyInsights;
+  quantitative_report: string | null;
+  qualitative_report: string | null;
+  macro_report: MacroReport | null;
+  synthesis_report: string | null;
+  trade_advice: string | null;
+  error?: string | null;
 }
 
 // Trade-related interfaces
@@ -49,5 +100,5 @@ export interface TradeResponse {
 export interface TradeValidationRequest {
   tradeId: string;
   symbol: string;
-  researchData?: ResearchResult;
+  researchData?: WorkflowResult;
 }

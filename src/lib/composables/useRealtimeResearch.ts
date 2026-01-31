@@ -5,7 +5,7 @@
 
 import { supabase } from '$lib/supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import type { ResearchResult } from '$lib/research-types';
+import type { WorkflowResult } from '$lib/research-types';
 import { checkJobStatus } from '$lib/api/research';
 
 export interface JobStep {
@@ -22,7 +22,7 @@ export interface JobStatus {
 	symbol?: string;
 	status?: string;
 	completed?: boolean;
-	result?: ResearchResult;
+	result?: WorkflowResult;
 	error?: string;
 	steps?: JobStep[];
 	created_at?: string;
@@ -42,7 +42,7 @@ export interface SubJob {
 interface RealtimeResearchState {
 	jobStatus: JobStatus | null;
 	subJobs: SubJob[];
-	researchResult: ResearchResult | null;
+	researchResult: WorkflowResult | null;
 	isRunningResearch: boolean;
 	isReconnecting: boolean;
 }
@@ -50,7 +50,7 @@ interface RealtimeResearchState {
 interface RealtimeResearchCallbacks {
 	onJobUpdate?: (jobStatus: JobStatus) => void;
 	onSubJobUpdate?: (subJob: SubJob) => void;
-	onComplete?: (result: ResearchResult) => void;
+	onComplete?: (result: WorkflowResult) => void;
 	onError?: (error: string) => void;
 }
 
@@ -68,7 +68,7 @@ export function createRealtimeResearch(callbacks?: RealtimeResearchCallbacks) {
 	let stateUpdaters: {
 		setJobStatus: (status: JobStatus | null) => void;
 		setSubJobs: (jobs: SubJob[]) => void;
-		setResearchResult: (result: ResearchResult | null) => void;
+		setWorkflowResult: (result: WorkflowResult | null) => void;
 		setIsRunningResearch: (running: boolean) => void;
 		setIsReconnecting: (reconnecting: boolean) => void;
 	} | null = null;
@@ -130,8 +130,8 @@ export function createRealtimeResearch(callbacks?: RealtimeResearchCallbacks) {
 				// Check if job is already completed
 				if (mainJob.status === 'completed') {
 					console.log('Job already completed, updating result');
-					const result = mainJob.metadata?.result as ResearchResult;
-					stateUpdaters.setResearchResult(result);
+					const result = mainJob.metadata?.result as WorkflowResult;
+					stateUpdaters.setWorkflowResult(result);
 					stateUpdaters.setIsRunningResearch(false);
 					callbacks?.onComplete?.(result);
 				} else if (mainJob.status === 'failed') {
@@ -282,11 +282,11 @@ export function createRealtimeResearch(callbacks?: RealtimeResearchCallbacks) {
 							console.log('✅ Research completed! Metadata result:', updatedJob.metadata?.result);
 							console.log('📊 Result structure:', {
 								hasResult: !!updatedJob.metadata?.result,
-								hasComprehensiveReport: !!updatedJob.metadata?.result?.comprehensive_report,
-								hasComprehensiveAnalysis: !!updatedJob.metadata?.result?.comprehensive_report?.comprehensive_analysis
+								hasSynthesisReport: !!updatedJob.metadata?.result?.synthesis_report,
+								hasQuantitativeReport: !!updatedJob.metadata?.result?.quantitative_report
 							});
-							const result = updatedJob.metadata?.result as ResearchResult;
-							stateUpdaters.setResearchResult(result);
+							const result = updatedJob.metadata?.result as WorkflowResult;
+							stateUpdaters.setWorkflowResult(result);
 							stateUpdaters.setIsRunningResearch(false);
 							callbacks?.onComplete?.(result);
 
@@ -403,9 +403,9 @@ export function createRealtimeResearch(callbacks?: RealtimeResearchCallbacks) {
 
 					if (status.completed) {
 						console.log('Research completed:', status.result);
-						stateUpdaters.setResearchResult(status.result as ResearchResult);
+						stateUpdaters.setWorkflowResult(status.result as WorkflowResult);
 						stateUpdaters.setIsRunningResearch(false);
-						callbacks?.onComplete?.(status.result as ResearchResult);
+						callbacks?.onComplete?.(status.result as WorkflowResult);
 						if (pollingInterval) {
 							clearInterval(pollingInterval);
 							pollingInterval = null;

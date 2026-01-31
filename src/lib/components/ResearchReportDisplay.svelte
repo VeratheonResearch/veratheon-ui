@@ -2,6 +2,7 @@
 	import type { WorkflowResult } from '$lib/research-types';
 	import ReportFooter from '$lib/components/ReportFooter.svelte';
 	import EmptyReportState from '$lib/components/EmptyReportState.svelte';
+	import { TrendingUp, Lightbulb, BarChart3, Newspaper, Globe } from '@lucide/svelte';
 
 	let {
 		researchResult,
@@ -16,7 +17,7 @@
 	} = $props();
 
 	// Track which section is expanded (default to synthesis)
-	let expandedSection: string | null = 'synthesis';
+	let expandedSection = $state<string | null>('synthesis');
 
 	function toggleSection(section: string) {
 		expandedSection = expandedSection === section ? null : section;
@@ -31,7 +32,7 @@
 			onclick={() => toggleSection('synthesis')}
 		>
 			<h3 class="text-lg md:text-xl font-bold text-primary flex items-center gap-2">
-				<span class="text-2xl">📊</span>
+				<TrendingUp class="w-6 h-6" />
 				Investment Synthesis
 			</h3>
 			<span class="text-base-content/60">{expandedSection === 'synthesis' ? '▼' : '▶'}</span>
@@ -53,7 +54,7 @@
 				onclick={() => toggleSection('trade')}
 			>
 				<h3 class="text-lg md:text-xl font-bold text-warning flex items-center gap-2">
-					<span class="text-2xl">💡</span>
+					<Lightbulb class="w-6 h-6" />
 					Trade Ideas
 					<span class="badge badge-warning badge-sm">Advisory Only</span>
 				</h3>
@@ -79,7 +80,7 @@
 				onclick={() => toggleSection('quantitative')}
 			>
 				<h3 class="text-lg md:text-xl font-bold text-secondary flex items-center gap-2">
-					<span class="text-2xl">📈</span>
+					<BarChart3 class="w-6 h-6" />
 					Quantitative Analysis
 				</h3>
 				<span class="text-base-content/60">{expandedSection === 'quantitative' ? '▼' : '▶'}</span>
@@ -102,7 +103,7 @@
 				onclick={() => toggleSection('qualitative')}
 			>
 				<h3 class="text-lg md:text-xl font-bold text-accent flex items-center gap-2">
-					<span class="text-2xl">📰</span>
+					<Newspaper class="w-6 h-6" />
 					Qualitative Analysis
 				</h3>
 				<span class="text-base-content/60">{expandedSection === 'qualitative' ? '▼' : '▶'}</span>
@@ -125,7 +126,7 @@
 				onclick={() => toggleSection('macro')}
 			>
 				<h3 class="text-lg md:text-xl font-bold text-info flex items-center gap-2">
-					<span class="text-2xl">🌍</span>
+					<Globe class="w-6 h-6" />
 					Macro Economic Context
 				</h3>
 				<span class="text-base-content/60">{expandedSection === 'macro' ? '▼' : '▶'}</span>

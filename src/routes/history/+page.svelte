@@ -271,12 +271,12 @@
         <div class="flex justify-center py-20">
           <span class="loading loading-spinner loading-lg"></span>
         </div>
-      {:else if selectedJob.status === 'completed' && selectedJob.research_data?.result?.key_insights?.critical_insights}
-        <!-- Key Insights Preview -->
+      {:else if selectedJob.status === 'completed' && selectedJob.research_data?.result?.synthesis_report}
+        <!-- Synthesis Report Preview -->
         <div class="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-xl p-6 border-2 border-primary/30 mb-6">
           <div class="flex items-center gap-3 mb-4">
             <Lightbulb class="w-6 h-6 text-primary" />
-            <h3 class="text-xl font-bold text-primary">Key Investment Insights</h3>
+            <h3 class="text-xl font-bold text-primary">Investment Synthesis</h3>
           </div>
 
           <div class="prose max-w-none
@@ -286,7 +286,7 @@
                       prose-strong:text-primary prose-strong:font-semibold
                       prose-ul:space-y-2 prose-ol:space-y-2
                       prose-li:text-base-content">
-            {@html renderMarkdown(selectedJob.research_data.result.key_insights.critical_insights)}
+            {@html renderMarkdown(selectedJob.research_data.result.synthesis_report)}
           </div>
         </div>
 

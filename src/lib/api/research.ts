@@ -2,9 +2,7 @@
  * Start a new research job
  */
 export async function startResearch(
-	symbol: string,
-	forceRecompute: boolean,
-	model: string
+	symbol: string
 ): Promise<{ job_id: string }> {
 	const response = await fetch('/api/research/start', {
 		method: 'POST',
@@ -12,9 +10,7 @@ export async function startResearch(
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			symbol: symbol.trim().toUpperCase(),
-			force_recompute: forceRecompute,
-			model: model
+			symbol: symbol.trim().toUpperCase()
 		})
 	});
 
@@ -49,7 +45,6 @@ export async function checkJobStatus(jobId: string, symbol: string): Promise<any
 export async function saveJobToHistory(
 	mainJobId: string,
 	symbol: string,
-	forceRecompute: boolean,
 	getAccessToken: () => Promise<string | null>
 ): Promise<void> {
 	try {
@@ -73,9 +68,7 @@ export async function saveJobToHistory(
 			body: JSON.stringify({
 				main_job_id: mainJobId,
 				symbol: symbol,
-				metadata: {
-					force_recompute: forceRecompute
-				}
+				metadata: {}
 			})
 		});
 

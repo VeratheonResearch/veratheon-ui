@@ -3,7 +3,7 @@ import { API_URL } from '$lib/config';
 
 export async function POST({ request }) {
   try {
-    const { symbol, force_recompute, model } = await request.json();
+    const { symbol } = await request.json();
 
     if (!symbol || typeof symbol !== 'string') {
       return json({ error: 'Invalid symbol' }, { status: 400 });
@@ -18,29 +18,27 @@ export async function POST({ request }) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        symbol: symbolUpper,
-        force_recompute: Boolean(force_recompute),
-        model: model || 'o4_mini'  // Default to o4_mini if not provided
+        symbol: symbolUpper
       })
     });
-    
+
     if (!response.ok) {
       throw new Error(`Backend returned ${response.status}: ${response.statusText}`);
     }
-    
+
     const result = await response.json();
-    
-    return json({ 
+
+    return json({
       success: true,
       job_id: result.job_id,
       message: result.message,
       symbol: symbolUpper
     });
-    
+
   } catch (error) {
     console.error('Start research endpoint error:', error);
     return json(
-      { error: error.message || 'Failed to start research' }, 
+      { error: error.message || 'Failed to start research' },
       { status: 500 }
     );
   }

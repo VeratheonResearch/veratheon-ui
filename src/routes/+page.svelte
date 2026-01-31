@@ -22,7 +22,6 @@
     // This reactive statement will trigger when stockSymbol changes
     // The ReportStatusIndicator component will handle the actual API call
   }
-  let forceRecompute = false;
   let isRunningResearch = false;
   let researchResult: WorkflowResult | null = null;
   let currentJobId: string | null = null;
@@ -76,17 +75,6 @@
     }
   }
 
-  // Get preferred model from localStorage
-  function getPreferredModel(): string {
-    try {
-      const savedModel = localStorage.getItem('preferredModel');
-      return savedModel || 'o4_mini';
-    } catch (e) {
-      console.warn('Failed to read preferred model from localStorage:', e);
-      return 'o4_mini';
-    }
-  }
-
   // Get access token for API calls
   async function getAccessToken(): Promise<string | null> {
     const { data: { session } } = await supabase!.auth.getSession();
@@ -109,8 +97,7 @@
 
     try {
       // Start research and get job ID
-      const preferredModel = getPreferredModel();
-      const startResult = await apiStartResearch(stockSymbol, forceRecompute, preferredModel);
+      const startResult = await apiStartResearch(stockSymbol);
       console.log('Research started:', startResult);
 
       currentJobId = startResult.job_id;
@@ -119,7 +106,7 @@
       replaceState(`?job_id=${currentJobId}&symbol=${stockSymbol.trim().toUpperCase()}`, {});
 
       // Save to user history
-      await saveJobToHistory(currentJobId, stockSymbol.trim().toUpperCase(), forceRecompute, getAccessToken);
+      await saveJobToHistory(currentJobId, stockSymbol.trim().toUpperCase(), getAccessToken);
 
       // Get initial status
       const initialStatus = await checkJobStatus(currentJobId, stockSymbol);
@@ -253,7 +240,6 @@
   <div class="mb-4 md:mb-8">
     <ResearchInputCard
       bind:stockSymbol
-      bind:forceRecompute
       {isRunningResearch}
       onStartResearch={runResearch}
     />

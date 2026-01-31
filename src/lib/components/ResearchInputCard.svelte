@@ -5,12 +5,10 @@
 
 	let {
 		stockSymbol = $bindable(''),
-		forceRecompute = $bindable(false),
 		isRunningResearch,
 		onStartResearch
 	}: {
 		stockSymbol: string;
-		forceRecompute: boolean;
 		isRunningResearch: boolean;
 		onStartResearch: () => void;
 	} = $props();
@@ -39,21 +37,9 @@
 				{/if}
 			</div>
 
-			<!-- Recompute Checkbox -->
-			<div class="flex items-center justify-center md:justify-start gap-2 order-3 md:order-2">
-				<label for="force-recompute" class="text-xs md:text-sm text-base-content/70">Recompute</label>
-				<input
-					id="force-recompute"
-					type="checkbox"
-					class="checkbox checkbox-primary checkbox-sm md:checkbox-md"
-					bind:checked={forceRecompute}
-					disabled={isRunningResearch}
-				/>
-			</div>
-
 			<!-- Start Research Button -->
 			<button
-				class="btn btn-primary btn-sm md:btn-md shadow-md w-full md:w-auto order-2 md:order-3"
+				class="btn btn-primary btn-sm md:btn-md shadow-md w-full md:w-auto"
 				class:btn-disabled={isRunningResearch || !stockSymbol.trim()}
 				onclick={onStartResearch}
 				disabled={isRunningResearch || !stockSymbol.trim()}

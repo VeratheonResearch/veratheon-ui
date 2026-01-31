@@ -13,8 +13,9 @@
   import { startResearch as apiStartResearch, checkJobStatus, saveJobToHistory } from '$lib/api/research';
   import { createRealtimeResearch, type JobStatus, type SubJob } from '$lib/composables/useRealtimeResearch';
 
-  // Total number of research steps (must match backend research_flow.py)
-  const TOTAL_RESEARCH_STEPS = 14;
+  // Total number of research steps (must match backend autonomous workflow agents)
+  // 5 agents: quantitative, qualitative, macro, synthesis, trade_advice
+  const TOTAL_RESEARCH_STEPS = 5;
 
   let stockSymbol = '';
   $: if (stockSymbol.trim()) {

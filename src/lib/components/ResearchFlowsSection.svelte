@@ -12,6 +12,19 @@
 		metadata?: any;
 	}
 
+	// Display names for the autonomous workflow agents
+	const AGENT_DISPLAY_NAMES: Record<string, string> = {
+		quantitative_agent: 'Quantitative Analysis',
+		qualitative_agent: 'Qualitative Research',
+		macro_report: 'Macro Economic',
+		synthesis_agent: 'Synthesis',
+		trade_advice_agent: 'Trade Ideas'
+	};
+
+	function getDisplayName(jobName: string): string {
+		return AGENT_DISPLAY_NAMES[jobName] || jobName;
+	}
+
 	let {
 		subJobs,
 		isRunningResearch,
@@ -76,7 +89,7 @@
 								{:else}
 									<div class="w-2 h-2 rounded-full bg-base-300"></div>
 								{/if}
-								<span class="text-xs font-medium truncate">{subJob.job_name}</span>
+								<span class="text-xs font-medium truncate">{getDisplayName(subJob.job_name)}</span>
 							</div>
 						</button>
 					{/each}

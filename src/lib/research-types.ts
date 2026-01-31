@@ -1,4 +1,9 @@
 // TypeScript interfaces matching Python dataclasses from veratheon-research
+// Centralized type definitions for the Veratheon Research platform
+
+// ============================================================================
+// WORKFLOW RESULT TYPES
+// ============================================================================
 
 /**
  * Economic indicator with value and trend context.
@@ -101,4 +106,57 @@ export interface TradeValidationRequest {
   tradeId: string;
   symbol: string;
   researchData?: WorkflowResult;
+}
+
+// ============================================================================
+// JOB TRACKING TYPES
+// ============================================================================
+
+/**
+ * Individual step within a research job.
+ * Used for tracking progress through the workflow.
+ */
+export interface JobStep {
+  step: string;
+  timestamp: string;
+  status: string;
+}
+
+/**
+ * Status of a research job, including results and metadata.
+ * Maps to Supabase research_jobs table structure.
+ */
+export interface JobStatus {
+  job_id?: string;
+  main_job_id?: string;
+  sub_job_id?: string;
+  job_name?: string;
+  symbol?: string;
+  status?: string;
+  completed?: boolean;
+  result?: WorkflowResult;
+  error?: string;
+  steps?: JobStep[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+/**
+ * Sub-job tracking for individual research agents.
+ *
+ * Agent names in the autonomous workflow:
+ * - quantitative_agent: Financial health analysis
+ * - qualitative_agent: News and sentiment research
+ * - macro_report: Economic indicators (no LLM)
+ * - synthesis_agent: Combines all reports
+ * - trade_advice_agent: Trade recommendations (advisory)
+ */
+export interface SubJob {
+  id: number;
+  job_name: string;
+  status: string;
+  sub_job_id: string;
+  created_at: string;
+  updated_at: string;
+  metadata?: any;
 }

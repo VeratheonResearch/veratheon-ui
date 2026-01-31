@@ -5,39 +5,16 @@
 
 import { supabase } from '$lib/supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import type { WorkflowResult } from '$lib/research-types';
+import type {
+	WorkflowResult,
+	JobStatus,
+	SubJob,
+	JobStep
+} from '$lib/research-types';
 import { checkJobStatus } from '$lib/api/research';
 
-export interface JobStep {
-	step: string;
-	timestamp: string;
-	status: string;
-}
-
-export interface JobStatus {
-	job_id?: string;
-	main_job_id?: string;
-	sub_job_id?: string;
-	job_name?: string;
-	symbol?: string;
-	status?: string;
-	completed?: boolean;
-	result?: WorkflowResult;
-	error?: string;
-	steps?: JobStep[];
-	created_at?: string;
-	updated_at?: string;
-}
-
-export interface SubJob {
-	id: number;
-	job_name: string;
-	status: string;
-	sub_job_id: string;
-	created_at: string;
-	updated_at: string;
-	metadata?: any;
-}
+// Re-export types for convenient importing
+export type { JobStatus, SubJob, JobStep } from '$lib/research-types';
 
 interface RealtimeResearchState {
 	jobStatus: JobStatus | null;

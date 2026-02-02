@@ -9,6 +9,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import DisclaimerModal from '$lib/components/DisclaimerModal.svelte';
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+	import { Toaster } from 'svelte-sonner';
 
 	let { children } = $props();
 
@@ -153,3 +154,6 @@
 {/if}
 
 <DisclaimerModal isOpen={showDisclaimer} onAccept={acceptDisclaimer} />
+
+<!-- Toast Notification Container -->
+<Toaster position="top-right" richColors closeButton />

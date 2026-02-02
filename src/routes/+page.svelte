@@ -12,6 +12,7 @@
   import { renderMarkdown } from '$lib/utils/markdown';
   import { startResearch as apiStartResearch, checkJobStatus, saveJobToHistory } from '$lib/api/research';
   import { createRealtimeResearch, type JobStatus, type SubJob } from '$lib/composables/useRealtimeResearch';
+  import { showError, showWarning } from '$lib/utils/toast';
 
   // Total number of research steps (must match backend autonomous workflow agents)
   // 5 agents: quantitative, qualitative, macro, synthesis, trade_advice
@@ -54,7 +55,7 @@
       isRunningResearch = false;
     },
     onError: (error) => {
-      alert(`Research failed: ${error}`);
+      showError(`Research failed: ${error}`);
       isRunningResearch = false;
     }
   });
@@ -83,7 +84,7 @@
 
   async function runResearch() {
     if (!stockSymbol.trim()) {
-      alert('Please enter a stock symbol');
+      showWarning('Please enter a stock symbol');
       return;
     }
 
@@ -117,7 +118,7 @@
 
     } catch (error) {
       console.error('Research error:', error);
-      alert(`Research failed: ${error.message}`);
+      showError(`Research failed: ${error.message}`);
       isRunningResearch = false;
       realtimeResearch.cleanup();
     }

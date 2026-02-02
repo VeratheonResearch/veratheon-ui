@@ -4,6 +4,7 @@
   import { supabase } from '$lib/supabase';
   import { Clock, ChevronRight, AlertCircle, CheckCircle, Loader, XCircle, Lightbulb, FileText } from '@lucide/svelte';
   import { marked } from 'marked';
+  import { showError } from '$lib/utils/toast';
 
   interface JobData {
     id: number;
@@ -146,7 +147,7 @@
 
     } catch (err) {
       console.error('Error loading job details:', err);
-      alert('Failed to load job details');
+      showError('Failed to load job details');
     } finally {
       loadingJobDetails = false;
     }

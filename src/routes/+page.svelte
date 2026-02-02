@@ -13,6 +13,7 @@
   import { startResearch as apiStartResearch, checkJobStatus, saveJobToHistory } from '$lib/api/research';
   import { createRealtimeResearch, type JobStatus, type SubJob } from '$lib/composables/useRealtimeResearch';
   import { showError, showWarning } from '$lib/utils/toast';
+  import { handleApiError } from '$lib/utils/errorHandler';
 
   // Total number of research steps (must match backend autonomous workflow agents)
   // 5 agents: quantitative, qualitative, macro, synthesis, trade_advice
@@ -55,7 +56,7 @@
       isRunningResearch = false;
     },
     onError: (error) => {
-      showError(`Research failed: ${error}`);
+      handleApiError(error);
       isRunningResearch = false;
     }
   });
@@ -118,7 +119,8 @@
 
     } catch (error) {
       console.error('Research error:', error);
-      showError(`Research failed: ${error.message}`);
+      // Use the new error handler to show user-friendly error messages
+      handleApiError(error, () => runResearch());
       isRunningResearch = false;
       realtimeResearch.cleanup();
     }

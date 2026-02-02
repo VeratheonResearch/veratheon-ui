@@ -1,3 +1,5 @@
+import { extractErrorFromResponse } from '$lib/utils/errorHandler';
+
 /**
  * Start a new research job
  */
@@ -15,7 +17,8 @@ export async function startResearch(
 	});
 
 	if (!response.ok) {
-		throw new Error(`Failed to start research: ${response.statusText}`);
+		const errorData = await extractErrorFromResponse(response);
+		throw errorData;
 	}
 
 	return await response.json();
@@ -33,7 +36,8 @@ export async function checkJobStatus(jobId: string, symbol: string): Promise<any
 	);
 
 	if (!response.ok) {
-		throw new Error(`Failed to check status: ${response.statusText}`);
+		const errorData = await extractErrorFromResponse(response);
+		throw errorData;
 	}
 
 	return await response.json();

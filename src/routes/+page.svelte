@@ -267,6 +267,7 @@
             {subJobs}
             {isRunningResearch}
             bind:showFlows
+            jobId={currentJobId}
             onFlowSelect={(subJob) => {
               selectedFlow = subJob;
               console.log('Selected flow:', subJob.job_name, subJob);

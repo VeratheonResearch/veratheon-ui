@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import { ChartNoAxesCombined } from '@lucide/svelte';
+	import AgentThinkingBox from './AgentThinkingBox.svelte';
 
 	interface SubJob {
 		id: number;
@@ -29,12 +30,14 @@
 		subJobs,
 		isRunningResearch,
 		showFlows = $bindable(true),
-		onFlowSelect
+		onFlowSelect,
+		jobId
 	}: {
 		subJobs: SubJob[];
 		isRunningResearch: boolean;
 		showFlows: boolean;
 		onFlowSelect: (subJob: SubJob) => void;
+		jobId?: string;
 	} = $props();
 </script>
 
@@ -94,6 +97,21 @@
 						</button>
 					{/each}
 				</div>
+
+				<!-- Agent Thinking Displays -->
+				{#if jobId}
+					<div class="mt-4 space-y-2">
+						<h3 class="text-sm font-semibold text-base-content mb-2">Agent Activity</h3>
+						{#each subJobs as subJob (subJob.sub_job_id)}
+							<AgentThinkingBox
+								jobId={jobId}
+								agentName={subJob.job_name}
+								agentDisplayName={getDisplayName(subJob.job_name)}
+								isRunning={subJob.status === 'running'}
+							/>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		{/if}
 	</div>

@@ -8,13 +8,13 @@
 
 ## Progress Tracker
 
-### Overall Completion: 12% (3/24 features)
+### Overall Completion: 17% (4/24 features)
 
 ### Phase Status
 
 - [x] **Phase 1: Error Handling Foundation** (3/5 complete)
 - [ ] **Phase 2: Trade System Completion** (0/6 complete)
-- [ ] **Phase 3: Research Report Enhancements** (0/2 complete)
+- [ ] **Phase 3: Research Report Enhancements** (1/2 complete)
 - [ ] **Phase 4: User Productivity** (0/3 complete)
 - [ ] **Phase 5: Mobile & Performance** (0/6 complete)
 
@@ -27,16 +27,16 @@
 - [x] 1.4 Job Cancellation (Skip for now)
 - [x] 1.5 Real-time Agent Thinking Display
 
-#### Phase 2: Trade System Completion
-- [ ] 2.1 Trade Database Schema
-- [ ] 2.2 Trade API Endpoints
-- [ ] 2.3 Trade Execution UI
-- [ ] 2.4 Trade History Page
-- [ ] 2.5 Trade Execution Tracking
-- [ ] 2.6 Trade Journal
+#### Phase 2: Trade System Completion (SKIP FOR NOW)
+- [-] 2.1 Trade Database Schema
+- [-] 2.2 Trade API Endpoints
+- [-] 2.3 Trade Execution UI
+- [-] 2.4 Trade History Page
+- [-] 2.5 Trade Execution Tracking
+- [-] 2.6 Trade Journal
 
 #### Phase 3: Research Report Enhancements
-- [ ] 3.1 Report Navigation
+- [x] 3.1 Report Navigation
 - [ ] 3.2 Data Visualization
 
 #### Phase 4: User Productivity
@@ -1197,9 +1197,9 @@ Add table of contents, expand/collapse controls, and jump links.
 - Smooth scroll animations work
 - Mobile TOC is accessible and functional
 
-**Status**: ⬜ Not Started
-**Completed**: [Date]
-**Notes**: [Implementation notes, challenges, deviations from plan]
+**Status**: ✅ Completed
+**Completed**: 2026-02-04
+**Notes**: Successfully implemented report navigation with sticky table of contents, expand/collapse controls, and scroll tracking. Created TableOfContents.svelte with desktop sidebar and mobile dropdown layouts, including Intersection Observer for active section tracking. Created ScrollToTop.svelte floating button that appears after scrolling 400px. Updated ResearchReportDisplay.svelte to support multiple expanded sections (Set-based state), added section IDs for jump links with scroll-margin-top offset, and integrated TOC and ScrollToTop components. Desktop TOC shows as sticky sidebar, mobile shows as collapsible dropdown above content.
 
 ---
 
